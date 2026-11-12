@@ -39,6 +39,13 @@
     maxEffects: 300,
     feedLines: 6, // lines in the "What just happened" list
 
+    // The laying-stopped notice stays up, and keeps its cause, at least this
+    // many ticks (one day: 20 seconds at normal speed), and clears only after
+    // the queen has laid this long without a stop, so it never blinks
+    // (bead hive-test-gow). The rules read it, but it changes only when the
+    // notice shows, never what happens in the game.
+    noticeHoldTicks: 200,
+
     // The loop.
     maxFrameMs: 250, // a longer gap (a hidden tab) counts as this long
     seedRange: 100000, // a new seed is a whole number below this

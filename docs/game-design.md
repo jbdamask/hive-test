@@ -55,6 +55,8 @@ The queen stops laying when she cannot pay for an egg: there is no clean empty c
 
 The fix button adds one share to the caste it names; in this example, one share to Nurse. The player can undo it with that caste's minus button. The notice for too little honey names honeymakers, and the notice for too little pollen names foragers. When every cell is full and none is dirty, the notice says "no empty cells. More builders would build comb." and names builders.
 
+The notice does not blink on and off. Once shown, it stays for at least one day (20 seconds at normal speed), and for that day it keeps the cause it first named, even if another cause stops the queen. After that day, a new cause replaces the old one. The notice goes away only when the queen has laid for one whole day without stopping. The queen often lays a few eggs and then stops again, so the notice can stay up for most of a game; it shows what is holding her back. The day is `noticeHoldTicks` in `game/data/layout.js` (bead hive-test-gow).
+
 ## The life cycle
 
 Every bee goes through three stages: egg, larva and adult. A larva has to be fed by nurses before it can become an adult. Adults live for a set time and then die, so the queen has to keep laying to keep the colony alive. A colony that stops laying shrinks.

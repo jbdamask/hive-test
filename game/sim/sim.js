@@ -54,6 +54,7 @@
     require('./rng.js');
     require('./hornets.js');
     require('../data/balance.js');
+    require('../data/layout.js');
   }
   var rng = BeeGame.rng;
   var hornets = BeeGame.hornets;
@@ -219,12 +220,19 @@
     return null;
   }
 
+  // docs/game-design.md "When laying stops": a notice stays up at least
+  // layout.noticeHoldTicks, keeps its cause for that long, and clears only
+  // once the queen has gone that long without a stop, so it does not blink.
   function showNotice(st, cause, ev) {
-    if (st.notice && st.notice.cause === cause) return;
+    var up = st.notice && st.notice.kind === 'layingStopped' ? st.notice : null;
+    if (up) {
+      up.lastStopTick = st.tick;
+      if (up.cause === cause || st.tick - up.tick < BeeGame.layout.noticeHoldTicks) return;
+    }
     var n = NOTICES[cause];
     st.notice = {
       kind: 'layingStopped', cause: cause, text: n.text,
-      fix: { caste: n.caste, label: WORDS[n.caste].fix }, tick: st.tick
+      fix: { caste: n.caste, label: WORDS[n.caste].fix }, tick: st.tick, lastStopTick: st.tick
     };
     ev.push({ type: 'noticeShown', tick: st.tick, notice: clone(st.notice) });
   }
@@ -246,7 +254,8 @@
       showNotice(st, cause, ev);
       return;
     }
-    if (st.notice && st.notice.kind === 'layingStopped') {
+    if (st.notice && st.notice.kind === 'layingStopped' &&
+        st.tick - st.notice.lastStopTick >= BeeGame.layout.noticeHoldTicks) {
       st.notice = null;
       ev.push({ type: 'noticeCleared', tick: st.tick });
     }

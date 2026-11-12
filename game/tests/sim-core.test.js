@@ -8,6 +8,7 @@ const assert = require('node:assert');
 const sim = require('../sim/sim.js');
 const record = require('../sim/record.js');
 const fullBalance = require('../data/balance.js');
+const layout = require('../data/layout.js');
 const balance = { ...fullBalance, hornets: { ...fullBalance.hornets, waves: [] } };
 
 const CASTES = sim.CASTES;
@@ -200,6 +201,54 @@ test('when laying stops for want of clean cells, the notice names nurses and its
   const nurses = game.state.mix.shares.nurse;
   game.choose({ type: 'fixNotice' });
   assert.strictEqual(game.state.mix.shares.nurse, nurses + 1);
+});
+
+test('the laying-stopped notice does not blink: it keeps its cause and stays up until the queen lays without a stop for holdTicks', () => {
+  const hold = layout.noticeHoldTicks;
+  const game = sim.createGame(11, balance);
+  game.state.resources.honey = 0;
+  const shown = stepUntil(game, (e) => e.type === 'noticeShown', balance.queen.layTicks);
+  assert.strictEqual(shown.notice.cause, 'honey');
+  // A different cause soon after does not replace it.
+  for (const cell of game.state.cells) if (cell.content === 'empty') cell.content = 'dirty';
+  game.state.resources.honey = 1000;
+  game.state.resources.pollen = 1000;
+  let ev = stepUntil(game, (e) => e.type === 'noticeShown' || e.type === 'noticeCleared', hold - balance.queen.layTicks * 2);
+  assert.strictEqual(ev, null);
+  assert.strictEqual(game.state.notice.cause, 'honey');
+  // Laying again does not clear it at once.
+  for (const cell of game.state.cells) if (cell.content === 'dirty') cell.content = 'empty';
+  const laid = stepUntil(game, (e) => e.type === 'eggLaid', balance.queen.layTicks * 2);
+  assert.ok(laid);
+  assert.ok(game.state.notice, 'notice still up after one egg');
+});
+
+test('in a balanced game on seed 1 every laying notice stays up at least holdTicks, and clears only holdTicks after the last stop', () => {
+  const hold = layout.noticeHoldTicks;
+  const game = sim.createGame(1, fullBalance);
+  game.choose({ type: 'setMix', mix: 'Balanced' });
+  let shownTick = null;
+  let lastStop = null;
+  let shows = 0;
+  while (!game.state.over) {
+    if (game.state.warning) game.choose({ type: 'answerWarning', answer: 'defend' });
+    const before = game.state.notice ? game.state.notice.lastStopTick : null;
+    for (const e of game.step()) {
+      if (e.type === 'noticeShown') {
+        if (shownTick !== null) assert.ok(e.tick - shownTick >= hold, `cause changed after ${e.tick - shownTick} ticks`);
+        shownTick = e.tick;
+        shows += 1;
+      } else if (e.type === 'noticeCleared') {
+        assert.ok(e.tick - shownTick >= hold, `cleared ${e.tick - shownTick} ticks after shown`);
+        assert.ok(e.tick - before >= hold, `cleared ${e.tick - before} ticks after the last stop`);
+        shownTick = null;
+      }
+    }
+    if (game.state.notice) lastStop = game.state.notice.lastStopTick;
+  }
+  assert.ok(lastStop !== null);
+  // Before the rule there were 231 shows in this game.
+  assert.ok(shows > 0 && shows <= 60, `${shows} shows`);
 });
 
 test('when every share is 0 the queen lays no eggs', () => {
