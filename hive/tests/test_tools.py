@@ -1,4 +1,5 @@
 """The team's tools: the spec brief check, the issue check, the rule budget, generated files, rule pointers, scratch."""
+import json
 import re
 import subprocess
 import sys
@@ -8,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "hive" / "tools"))
+import blind_pair  # noqa: E402
 import issue_check  # noqa: E402
 import scratch  # noqa: E402
 import spec_brief  # noqa: E402
@@ -111,6 +113,35 @@ class Rules(unittest.TestCase):
                 if not any(h.startswith(sec) for h in heads):
                     bad.append(f'{rel}: {name} "{sec}"')
         self.assertEqual(bad, [])
+
+
+class BlindPair(unittest.TestCase):
+    def test_twelve_cases_put_new_in_a_on_some_and_b_on_others(self):
+        for _ in range(50):
+            sides = blind_pair.draw(12)
+            self.assertTrue(any(sides) and not all(sides))
+
+    def test_a_coin_stuck_on_one_side_is_redrawn(self):
+        flips = iter([0] * 12 + [1] + [0] * 11)
+        self.assertEqual(sum(blind_pair.draw(12, coin=lambda: next(flips))), 1)
+
+    def test_check_file_shows_results_verbatim_and_key_matches(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)
+            (p / "src.md").write_text("the rule")
+            args = ["--title", "T", "--sources", str(p / "src.md"), "--out", str(p / "c.md"), "--key", str(p / "k.json")]
+            for i in range(12):
+                (p / f"o{i}").write_text(f"old {i} (day 31)\n")
+                (p / f"n{i}").write_text(f"new {i} (day 31)\n")
+                args += ["--case", f"case {i}", str(p / f"o{i}"), str(p / f"n{i}")]
+            self.assertEqual(blind_pair.main(args), 0)
+            text, key = (p / "c.md").read_text(), json.loads((p / "k.json").read_text())
+            self.assertLess(text.index("the rule"), text.index("## Part 2"))
+            self.assertNotIn("is new", text)
+            self.assertEqual(set(key.values()), {"A is new", "B is new"})
+            for i in range(12):
+                a = text.index(f"new {i} (day 31)") < text.index(f"old {i} (day 31)")
+                self.assertEqual(key[f"case {i}"], "A is new" if a else "B is new")
 
 
 class Scratch(unittest.TestCase):

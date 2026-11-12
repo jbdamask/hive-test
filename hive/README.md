@@ -19,7 +19,7 @@ Start the lead with `HIVE_ROLE=lead claude` in the repo root. Then open a GitHub
 | hive/ROLES.json | The roles, built into .claude/agents/ by hive/tools/roles.py |
 | hive/STRATEGIST.md, hive/GARDENER.md, hive/RED-TEAM.md, hive/EXPERIENCE.md, hive/FRESH-EYES.md, hive/PRODUCT-REVIEW.md | Role briefs |
 | .beads/PLANNING.md | Conventions for the beads-planner plugin |
-| hive/tools/ | roles, brief, generated, land, scratch, spec_brief, issue_check, team_use, term |
+| hive/tools/ | roles, brief, generated, land, scratch, spec_brief, issue_check, team_use, term, blind_pair |
 | hive/hooks/ | The guards (wired in .claude/settings.json) |
 | hive/tests/ | Tests for all of it: `python3 -m unittest discover -s hive/tests` |
 
