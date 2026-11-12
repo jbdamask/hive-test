@@ -2,6 +2,8 @@
 
 Bead hive-test-wa5 ran these checks on 2026-11-12, on main at b24298a. Every check below is a yes. The agent that ran them did not build the game.
 
+Bead hive-test-4pb.3 ran check 15 again on 2026-11-12, on main at 39ab7a5, after the laying-rate retune (hive-test-qlq, 2570aaa) and the laying-notice change (hive-test-gow, 4c40b07). The two games wa5 recorded for check 15 replay to different results under the new balance, so their records were replaced; the old records are in git at b5dac07. Check 20 was not timed again (see check 20). The other checks keep wa5's results from b24298a, and where they name seeds 75913 and 71747 they mean wa5's two games.
+
 ## How the checks were run
 
 - **Browser.** Google Chrome 157.0.8103.52 for macOS, headless, driven over the DevTools protocol by scripts in the agent's scratch folder (`~/.hive/hive-test/scratch/e-hive-test-wa5/`: `cdp.js`, `checks.js`, `play.js`, `fight.js`, `verify-record.js`). The scripts' raw output and screenshots are in the same folder.
@@ -31,7 +33,18 @@ Bead hive-test-wa5 ran these checks on 2026-11-12, on main at b24298a. Every che
 
 **Check 13: yes (seed 4242).** Seed 4242 ended both ways. Played with Defend on every warning, the end screen said "The season is over" and "The season ended after 60 days with the queen alive." Replay this seed then started seed 4242 again at tick 0, and played on Grow with Keep my mix on every warning, the end screen said "The queen is dead" and "The hornets killed the queen on day 31 of 60." Both end screens showed "Seed 4242", Copy game record, Play again and Replay this seed. Play again started a new game on another seed (1861) at tick 0.
 
-**Check 15: yes (seeds 71747 and 75913).** Both games were played to the end through the page, each with at least one mix change, one hand-picked egg and one warning answered. Copy game record said "Copied." each time, and the text read back from the clipboard was the same as the end screen's record box. Replaying each saved record with `node game/sim/run.js --record <file>` printed the same ending, four parts and total as the browser's end screen:
+**Check 15: yes (seeds 60723 and 98010, on main at 39ab7a5).** John decided on 2026-11-12 that the re-run needs no normal-speed game, so both games were played at fast speed, the faster of the game's two speeds, with the same scripts and method as wa5 (copied to `~/.hive/hive-test/scratch/e-hive-test-4pb-3/`, with `play2.js` for the second game). Every choice was a real mouse click on the page's own button. Each game had at least one mix change, one hand-picked egg and one warning answered. Chrome reported no console messages, no exceptions and no log entries, and the page asked only for its ten `file://` files. Copy game record said "Copied." each time, and the text read back from the clipboard was the same as the end screen's record box. Replaying each saved record with `node game/sim/run.js --record <file>` printed the same ending, four parts and total as the browser's end screen:
+
+| Game | Seed | Ending on the end screen | run.js ending | Living bees | Honey made | Comb cells | Chambers | Total |
+|---|---|---|---|---|---|---|---|---|
+| Fast speed, `record-fast.txt` | 60723 | The hornets killed the queen on day 31 of 60 | queen died at tick 6021 (day 31) | 49 | 2163 | 60 | 1 | 2273 |
+| Fast speed, `record-fast-2.txt` | 98010 | The season ended after 60 days with the queen alive | season over at tick 12000 (day 60) | 172 | 4047 | 180 | 3 | 4402 |
+
+The numbers in each row are the same on the end screen and in run.js's output, and the on-screen score equalled `beeGame.score()` in all 11 and all 21 samples taken during the two games. The game on seed 60723 set Balanced at tick 32, used the laying notice's Add nurses at tick 101, picked a defender egg at tick 123 (it came out as a defender at tick 1822), used Match the mix now at tick 1507, answered the first warning Defend, clicked Keep Defend and then Balanced at tick 3023, and answered the second warning Keep my mix; the hornets then killed the queen. The game on seed 98010 set Balanced at tick 31, used Add nurses at tick 102, picked a scout egg at tick 121 (it came out as a scout at tick 1795), used Match the mix now at tick 2509 and answered all three warnings Defend. Each warning held the game at its tick for about 3.5 seconds and two Space presses until it was answered. Its colony reached 172 living bees, above the 160 the old laying rate allowed.
+
+wa5's run of this check, on main at b24298a, follows. Its records are no longer in this folder, and under the current balance the normal game's record replays to a different end (448 living bees, total 8582).
+
+wa5: both games were played to the end through the page, each with at least one mix change, one hand-picked egg and one warning answered. Copy game record said "Copied." each time, and the text read back from the clipboard was the same as the end screen's record box. Replaying each saved record with `node game/sim/run.js --record <file>` printed the same ending, four parts and total as the browser's end screen:
 
 | Game | Seed | Ending on the end screen | run.js ending | Living bees | Honey made | Comb cells | Chambers | Total |
 |---|---|---|---|---|---|---|---|---|
@@ -42,7 +55,7 @@ The numbers in each row are the same on the end screen and in run.js's output. T
 
 **Check 16: yes (seeds 8675, 0 and 99999).** Opening `game/index.html?seed=8675` skipped the title screen and started a game whose seed, in the game and in the header, was 8675. Seeds 0 and 99999 did the same.
 
-**Check 20: yes (seed 71747).** The normal-speed game ran from the Start click at 21:02:01 to the end screen at 21:22:28 UTC: 1,225.8 seconds by the clock. Of that, 25.8 seconds were pauses: one Space pause of 15.3 seconds, during which the game stayed at tick 4000, and three warnings left waiting for about 3.5 seconds each. The playing time not counting pauses was 1,200.1 seconds, or 20 minutes, which is between 15 and 25 minutes. The queen survived. This matches the balance file: 60 days of 200 ticks at 10 ticks a second is 1,200 seconds.
+**Check 20: yes (seed 71747), not timed again at 39ab7a5.** John decided on 2026-11-12 that the re-run needs no normal-speed game. The playing time depends only on the tick rate and the season length, and neither changed between b24298a and 39ab7a5: `ticksPerSecond` is still 10 at normal speed and the season is still 60 days of 200 ticks in `game/data/balance.js`, and `node --test game/tests/season-length.test.js` passes at 39ab7a5 (2 tests, 0 failures). A season the queen survives therefore still lasts 1,200 seconds of playing time. wa5's measurement follows. The normal-speed game ran from the Start click at 21:02:01 to the end screen at 21:22:28 UTC: 1,225.8 seconds by the clock. Of that, 25.8 seconds were pauses: one Space pause of 15.3 seconds, during which the game stayed at tick 4000, and three warnings left waiting for about 3.5 seconds each. The playing time not counting pauses was 1,200.1 seconds, or 20 minutes, which is between 15 and 25 minutes. The queen survived. This matches the balance file: 60 days of 200 ticks at 10 ticks a second is 1,200 seconds.
 
 ## Found along the way
 
