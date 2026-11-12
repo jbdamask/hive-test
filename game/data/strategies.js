@@ -50,6 +50,12 @@
       warnings: 'defend'
     },
     {
+      name: 'gather',
+      description: 'Sets the Gather mix at the start; every warning Defend, and lets the mix go back after each wave.',
+      choices: [{ tick: 0, choice: { type: 'setMix', mix: 'Gather' } }],
+      warnings: 'defend'
+    },
+    {
       name: 'change-nothing',
       description: 'Grow throughout: no choices, no hand-picked eggs; every warning Keep my mix.',
       choices: [],

@@ -143,7 +143,7 @@ The command-line runner reads the record (`node game/sim/run.js --record <file>`
 
 ## Starting balance numbers
 
-These are the values after tuning on seeds 1 to 20 (bead hive-test-hi1). The live values are in `game/data/balance.js`; when this table and that file differ, the file is right. Tuning made the first wave small, 3 hornets, and halved a hornet's chance of reaching the queen, so a player who keeps Grow usually lives through the first wave and loses the queen to a later one, as the design intends.
+These are the values after tuning on seeds 1 to 20 (bead hive-test-hi1). The live values are in `game/data/balance.js`; when this table and that file differ, the file is right. Tuning made the first wave small, 3 hornets, and halved a hornet's chance of reaching the queen, so a player who keeps Grow usually lives through the first wave and loses the queen to a later one, as the design intends. A retune (bead hive-test-qlq) made the queen's fastest laying rate about 66 eggs a day instead of 8, because at 8 a day the colony settled at 160 bees whatever the player chose; now cells, honey and pollen limit her, as "When laying stops" says. Her eggs and the builders' wax both take honey, so a mix with few honeymakers, such as Grow, grows the comb and the hive more slowly.
 
 **The four mixes.** Each number is a caste's share. A caste's part of the eggs is its share divided by 20, the sum of the shares in each mix.
 
@@ -163,6 +163,7 @@ Grow lays few defenders: 1 egg in 20.
 | Number | Starting value |
 |---|---|
 | What an egg costs | 2 honey and 1 pollen, and one clean empty cell |
+| How fast the queen can lay | At most one egg every 3 ticks, about 66 a day. Clean empty cells, honey or pollen usually stop her before this does, so how big the colony grows depends on the player's mix |
 | How long an adult lives | 20 days |
 | Ticks in a day | 200 |
 | Days in a season | 60 |

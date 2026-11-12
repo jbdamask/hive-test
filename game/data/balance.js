@@ -35,8 +35,11 @@
       cells: 40
     },
 
-    // The queen and her eggs.
-    queen: { layTicks: 25, eggHoney: 2, eggPollen: 1 },
+    // The queen and her eggs. layTicks is the fastest she can lay, kept fast
+    // enough (66 eggs a day) that clean empty cells, honey and pollen usually
+    // stop her first, so colony size follows the player's choices; at 2 she
+    // takes the honey builders need and the hive stops growing (bead hive-test-qlq).
+    queen: { layTicks: 3, eggHoney: 2, eggPollen: 1 },
 
     // Egg, larva, adult.
     brood: { eggTicks: 600, larvaTicks: 1000, feedsNeeded: 2, larvaMaxTicks: 2400 },

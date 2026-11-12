@@ -60,6 +60,23 @@ test('balanced scores higher than lay-nothing on every one of seeds 1 to 20', ()
   });
 });
 
+// Bead hive-test-qlq: a fixed laying rate once held every colony at 160 bees.
+// Cells, honey and pollen must stop the queen, so her laying stops in play and
+// colony size follows the player's choices.
+test('the queen stops laying at least once in balanced games that survive, on at least 15 of seeds 1 to 20', () => {
+  const n = balanced.filter((r) => r.ending === 'season over' && /^ {2}laying stopped: /m.test(r.out)).length;
+  assert.ok(n >= AT_LEAST, `laying stopped in ${n} surviving balanced games`);
+});
+
+test('balanced and gather end with different colony sizes on most seeds where both survive', () => {
+  const size = (out) => Number(/^colony size \(living bees\): (\d+)$/m.exec(out)[1]);
+  const gather = results('gather');
+  const both = SEEDS.filter((s, i) => balanced[i].ending === 'season over' && gather[i].ending === 'season over');
+  const differ = both.filter((s) => size(balanced[s - 1].out) !== size(gather[s - 1].out));
+  assert.ok(both.length >= AT_LEAST, `both survived on only ${both.length} seeds`);
+  assert.ok(differ.length >= AT_LEAST, `colony sizes differ on only ${differ.length} seeds`);
+});
+
 test('a full season has at least three waves, each larger than the last, with a warning before at least one', () => {
   const full = balanced.filter((r) => r.ending === 'season over');
   assert.ok(full.length > 0, 'no balanced game lasted the season');

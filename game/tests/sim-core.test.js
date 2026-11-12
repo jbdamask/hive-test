@@ -214,7 +214,9 @@ test('when every share is 0 the queen lays no eggs', () => {
 test('each caste is seen at work through its events, and every adult has a task', () => {
   const game = sim.createGame(99, balance);
   const seen = new Set();
-  while (game.state.tick < balance.ticksPerDay * 15) for (const e of game.step()) seen.add(e.type);
+  // The whole season: on Grow the queen now competes with the builders for
+  // honey, so the first new chamber can come after day 15 (bead hive-test-qlq).
+  while (!game.state.over) for (const e of game.step()) seen.add(e.type);
   for (const t of ['eggLaid', 'cellBuilt', 'chamberAdded', 'larvaFed', 'cellCleaned',
     'nectarDelivered', 'pollenDelivered', 'honeyMade', 'patchFound']) {
     assert.ok(seen.has(t), t);
