@@ -66,6 +66,8 @@
     // wave is small enough that Grow usually lives through it and loses the
     // queen to a later one.
     hornets: {
+      // `day` counts from 0 (arrives at tick day * ticksPerDay); the screen
+      // and the runner count from 1, so these show as days 16, 31 and 46.
       waves: [ // each larger than the one before
         { day: 15, size: 3 },
         { day: 30, size: 10 },

@@ -74,6 +74,12 @@
     }
   }
 
+  // The day the browser shows for a tick: days count from 1, and the last
+  // tick of the season still shows the last day (game/ui/main.js).
+  function dayShown(tick, b) {
+    return Math.min(Math.floor(tick / b.ticksPerDay) + 1, b.daysPerSeason);
+  }
+
   function waveName(index) {
     return 'wave ' + (index + 1);
   }
@@ -89,7 +95,7 @@
       case 'warningRaised': {
         var w = e.warning;
         return 'warning: ' + waveName(w.wave) + ', about ' + w.size + ' hornets, arrives day ' +
-          Math.floor(w.arrivesTick / b.ticksPerDay) + ' (in ' + w.daysUntil + ' days); ' +
+          dayShown(w.arrivesTick, b) + ' (in ' + w.daysUntil + ' days); ' +
           w.defenders + ' defenders; Defend would move ' + w.defendMoves + ' bees';
       }
       case 'beesMoved':
@@ -212,7 +218,7 @@
     if (withLog) {
       var season = zeroCounts();
       run.days.forEach(function (d, i) {
-        lines.push('day ' + i);
+        lines.push('day ' + dayShown(i * b.ticksPerDay, b));
         d.lines.forEach(function (l) { lines.push('  ' + l); });
         lines.push('  eggs laid: ' + castesText(d.eggs));
         CASTES.forEach(function (c) { season[c] += d.eggs[c]; });
@@ -221,7 +227,7 @@
     }
     var over = game.state.over;
     var s = game.score();
-    lines.push('ending: ' + over.ending + ' at tick ' + over.tick + ' (day ' + Math.floor(over.tick / b.ticksPerDay) + ')');
+    lines.push('ending: ' + over.ending + ' at tick ' + over.tick + ' (day ' + dayShown(over.tick, b) + ')');
     lines.push('colony size (living bees): ' + s.livingBees);
     lines.push('honey made: ' + s.honeyMade);
     lines.push('honeycomb (comb cells): ' + s.combCells);
