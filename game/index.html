@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bee colony</title>
+<style>
+  :root {
+    --ink: #3a2c10;
+    --paper: #fffaf0;
+    --panel: #f6e7c1;
+    --edge: #c79a3a;
+    --accent: #e0a72e;
+    --muted: #7a6a48;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.4 system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  header {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--edge);
+  }
+  header h1 { font-size: 18px; margin: 0 12px 0 0; }
+  header .spacer { flex: 1; }
+  #status { font-weight: 600; }
+  main { display: flex; gap: 16px; padding: 12px 16px; align-items: flex-start; }
+  #board { display: block; height: auto; max-width: calc(100vw - 350px); min-width: 0; border-radius: 6px; }
+  #side { flex: none; width: 300px; display: flex; flex-direction: column; gap: 12px; }
+  section.box { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; padding: 8px 10px; }
+  section.box h2 { font-size: 14px; margin: 0 0 6px; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 1px 4px; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.total td { border-top: 1px solid var(--edge); font-weight: 700; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .hex { border-radius: 2px; border: 1px solid var(--edge); }
+  #feed { margin: 0; padding-left: 18px; min-height: 4em; }
+  #warning-line { color: #a01e14; font-weight: 600; }
+  button {
+    font: inherit;
+    padding: 5px 12px;
+    border: 1px solid var(--edge);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button.primary { background: var(--accent); font-weight: 700; }
+  button:hover { filter: brightness(0.95); }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(58, 44, 16, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .overlay[hidden] { display: none; }
+  .card {
+    background: var(--paper);
+    border: 2px solid var(--edge);
+    border-radius: 10px;
+    padding: 20px 28px;
+    max-width: 640px;
+    max-height: 90vh;
+    overflow: auto;
+  }
+  .card h2 { margin-top: 0; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  #help { z-index: 20; }
+  #record-text { width: 100%; height: 6em; font: 12px monospace; margin-top: 8px; }
+  .hint { color: var(--muted); font-size: 12px; }
+  kbd { border: 1px solid var(--edge); border-radius: 3px; padding: 0 4px; background: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bee colony</h1>
+  <span>Seed <b id="hud-seed">-</b></span>
+  <span id="hud-day">Day -</span>
+  <span id="hud-speed">Normal speed</span>
+  <span id="status"></span>
+  <span class="spacer"></span>
+  <button id="help-button" type="button" title="How to play (H)">How to play</button>
+</header>
+
+<main>
+  <canvas id="board" aria-label="The meadow and the inside of the hive"></canvas>
+  <div id="side">
+    <section class="box" aria-label="Score">
+      <h2>Score</h2>
+      <table>
+        <tr><td>Colony size (living bees)</td><td class="n" id="score-livingBees">0</td></tr>
+        <tr><td>Honey made</td><td class="n" id="score-honeyMade">0</td></tr>
+        <tr><td>Honeycomb (comb cells)</td><td class="n" id="score-combCells">0</td></tr>
+        <tr><td>Hive size (chambers)</td><td class="n" id="score-chambers">0</td></tr>
+        <tr class="total"><td>Total</td><td class="n" id="score-total">0</td></tr>
+      </table>
+    </section>
+    <section class="box" aria-label="Controls">
+      <div id="warning-line"></div>
+      <div id="controls"></div>
+    </section>
+    <section class="box" aria-label="Bees">
+      <h2>Bees</h2>
+      <table id="castes"></table>
+    </section>
+    <section class="box" aria-label="Stores">
+      <h2>Stores</h2>
+      <table id="stores"></table>
+    </section>
+    <section class="box" aria-label="Today">
+      <h2 id="today-title">Today</h2>
+      <table id="today"></table>
+    </section>
+    <section class="box" aria-label="What just happened">
+      <h2>What just happened</h2>
+      <ul id="feed"></ul>
+    </section>
+    <section class="box" aria-label="Comb cells">
+      <h2>Comb cells</h2>
+      <table id="cell-key"></table>
+    </section>
+  </div>
+</main>
+
+<div class="overlay" id="title">
+  <div class="card">
+    <h2>Bee colony</h2>
+    <p>You are the queen. Set the colony mix and your eggs hatch into builders, nurses, foragers, honeymakers, scouts and defenders.</p>
+    <p>The bees work on their own: they build comb, raise young, gather nectar and pollen, and make honey.</p>
+    <p>Murder hornets attack in waves. Keep enough defenders, or the hornets kill the queen and the game ends.</p>
+    <p>Seed <b id="title-seed">-</b></p>
+    <div class="row">
+      <label for="seed-input">Type a seed to play a particular game:</label>
+      <input id="seed-input" type="text" inputmode="numeric" maxlength="9" size="10" placeholder="optional">
+      <span id="seed-error" class="hint"></span>
+    </div>
+    <div class="row">
+      <button id="start-button" class="primary" type="button">Start</button>
+      <button id="title-help-button" type="button">How to play</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="help" hidden>
+  <div class="card" role="dialog" aria-labelledby="help-heading">
+    <h2 id="help-heading">How to play</h2>
+    <p><b>You are the queen.</b> You lay the eggs; the bees that hatch work on their own. You decide what kind of bees the colony has.</p>
+    <p><b>The colony mix</b> gives each of the six castes a share of the eggs. Grow, Gather, Defend and Balanced set all six shares in one click, and plus and minus change one caste. The game starts on Grow. You can also pick the caste of the next egg by hand, and Match the mix now moves grown bees between castes to fit the mix.</p>
+    <p><b>The castes.</b>
+      Builders turn honey into wax and build comb cells and new chambers.
+      Nurses feed larvae and clean dirty cells.
+      Foragers bring nectar and pollen from flower patches.
+      Honeymakers turn nectar into honey.
+      Scouts find new flower patches and spot hornets coming.
+      Defenders guard the entrance and fight hornets.</p>
+    <p><b>Eggs</b> cost honey and pollen and need a clean, empty comb cell. A used cell is dirty until a nurse cleans it. If the queen stops laying, a notice says why and offers a fix.</p>
+    <p><b>Murder hornets</b> attack in waves, each larger than the last. When a scout sees a wave coming, the game pauses and you answer Defend or Keep my mix. Hornets that get past the defenders kill bees, eat young and take honey. If they reach the queen, the game ends.</p>
+    <p><b>Points.</b> At the end of the season you score your living bees, all the honey made, your comb cells and your chambers, added up.</p>
+    <p><b>Keys.</b> <kbd>Space</kbd> pauses and resumes. <kbd>1</kbd> is normal speed and <kbd>2</kbd> is fast speed. <kbd>H</kbd> opens and closes this page.</p>
+    <p class="hint">The left side of the screen is the meadow, with the hive in the middle and flower patches around it; grey patches are not found yet. The right side is the inside of the hive.</p>
+    <div class="row"><button id="help-close" class="primary" type="button">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="end" hidden>
+  <div class="card">
+    <h2 id="end-heading">The season is over</h2>
+    <p id="end-ending"></p>
+    <table>
+      <tr><td>Colony size (living bees)</td><td class="n" id="end-livingBees">0</td></tr>
+      <tr><td>Honey made</td><td class="n" id="end-honeyMade">0</td></tr>
+      <tr><td>Honeycomb (comb cells)</td><td class="n" id="end-combCells">0</td></tr>
+      <tr><td>Hive size (chambers)</td><td class="n" id="end-chambers">0</td></tr>
+      <tr class="total"><td>Total</td><td class="n" id="end-total">0</td></tr>
+    </table>
+    <p>Seed <b id="end-seed">-</b></p>
+    <div class="row">
+      <button id="copy-record" type="button">Copy game record</button>
+      <span id="copy-status" class="hint"></span>
+    </div>
+    <textarea id="record-text" readonly wrap="off" aria-label="Game record"></textarea>
+    <div class="row">
+      <button id="play-again" class="primary" type="button">Play again</button>
+      <button id="replay-seed" type="button">Replay this seed</button>
+    </div>
+  </div>
+</div>
+
+<script src="data/balance.js"></script>
+<script src="data/layout.js"></script>
+<script src="sim/rng.js"></script>
+<script src="sim/hornets.js"></script>
+<script src="sim/sim.js"></script>
+<script src="sim/record.js"></script>
+<script src="ui/draw.js"></script>
+<script src="ui/main.js"></script>
+</body>
+</html>
