@@ -126,9 +126,8 @@ John added `approved_spec` to the first brief, which accepts its recommendations
 1. **Who the player is.** The queen bee (recommended answer). How she chooses castes: **both**, a colony mix by default and a hand-picked caste for the next egg at any time (John's comment on issue #1).
 2. **How long a game lasts.** One season, ending with a score, of 15 to 25 minutes at normal speed (recommended answer).
 3. **Online or not.** The prototype stays in the repository and John opens it from disk; it is not put online (recommended answer).
+4. **The design changes made after approval** (warning pause, mix going back after a wave, one-click "Match the mix now", copyable game record, seed in the page address): **build them** (recommended answer, given to the lead in session on 2026-11-12).
 
-## Decide (the open question for John, question 1 in the revised issue brief)
-1. The design changed after `approved_spec` was added, beyond John's answer on queen control: each hornet warning pauses the game for a one-click answer, the mix goes back by itself after a wave, bees move between castes with one click, the end screen gives a copyable game record, and the page takes a seed in its address. Build it this way? Recommended: yes; these cut the decisions a game needs from about 54 to 4 (see "What the user does") and cost no money.
 
 ## What the user does
 
