@@ -186,6 +186,7 @@
     ui.last = now;
     if (ui.game) {
       runTicks(ms, now);
+      if (ui.game.state.over) showEnd(); // also when the console stepped the game to its end
       BeeGame.draw.frame(ctx, ui.game, ui.fx, now);
     }
     render();
@@ -254,7 +255,7 @@
     }));
     if (!ui.today || g.day() !== ui.todayDay) resetToday(g.day());
     if (ui.today) {
-      $('today-title').textContent = 'Day ' + (ui.todayDay + 1) + ' so far';
+      $('today-title').textContent = 'Day ' + Math.min(ui.todayDay + 1, B.daysPerSeason) + ' so far';
       rows('today', TODAY.map(function (t) { return { label: t.label, value: ui.today[t.key] }; }));
     }
     var feedHtml = ui.feed.map(function (line) { return '<li>' + escapeHtml(line) + '</li>'; }).join('');

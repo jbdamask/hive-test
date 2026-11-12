@@ -61,12 +61,22 @@
     var h = L.hive;
     var adding = st.bees.some(function (bee) { return bee.stage === 'adult' && bee.task === 'addChamber'; });
     var n = st.chambers.length + (adding ? 1 : 0);
-    var cols = Math.max(1, Math.ceil(Math.sqrt(n)));
-    var rows = Math.max(1, Math.ceil(n / cols));
-    var boxW = (h.width - h.gap * (cols - 1)) / cols;
-    var boxH = (h.height - h.gap * (rows - 1)) / rows;
     var cellRows = Math.ceil(b.hive.cellsPerChamber / L.cellColumns);
-    var size = Math.min((boxW - h.padding * 2) / (L.cellColumns + HALF), (boxH - h.padding * 2) / cellRows); // not balance: padding on both sides
+    // Try every number of chamber columns and keep the one with the largest cells.
+    var cols = 1;
+    var rows = 1;
+    var boxW = 0;
+    var boxH = 0;
+    var size = 0;
+    for (var tryCols = 1; tryCols <= Math.max(1, n); tryCols += 1) {
+      var tryRows = Math.max(1, Math.ceil(n / tryCols));
+      var w = (h.width - h.gap * (tryCols - 1)) / tryCols;
+      var ht = (h.height - h.gap * (tryRows - 1)) / tryRows;
+      var s = Math.min((w - h.padding * 2) / (L.cellColumns + HALF), (ht - h.padding * 2) / cellRows); // not balance: padding on both sides
+      if (s > size) {
+        cols = tryCols; rows = tryRows; boxW = w; boxH = ht; size = s;
+      }
+    }
     var boxes = [];
     for (var i = 0; i < n; i += 1) {
       boxes.push({
