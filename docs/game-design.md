@@ -169,7 +169,7 @@ Grow lays few defenders: 1 egg in 20.
 | Days in a season | 60 |
 | Ticks each second at normal speed | 10, so a day takes 20 seconds and a season 20 minutes |
 | Ticks each second at fast speed | 30, so a season takes about 7 minutes |
-| When the waves arrive | Days 15, 30 and 45 |
+| When the waves arrive | Days 16, 31 and 46, as the screen counts them (day 1 is the first day) |
 | How many hornets in each wave | 3, then 10, then 20 |
 | How far ahead a scout can see a wave | 2 days |
 | A hornet inside the hive: its chance each fight round of reaching the queen | 1 in 20 |

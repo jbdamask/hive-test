@@ -11,7 +11,7 @@ You are also a one-shot agent: the agent brief added to your context at start gi
 Your role brief follows. It is complete: you do not need to open the files it was copied from.
 
 ## The blind check
-The fixer files the blind check as its own bead labelled `role:blind-checker`; the fix bead depends on it and closes only after its verdict.
+The fixer files the blind check as its own bead labelled `role:blind-checker`; the fix bead depends on it and closes only after its verdict (hook: `bd close` on a bug without a closed blind-check dependency is refused).
 - The check file has two parts: each case's source text first, then the old and new results as A and B with the direction hidden. The checker judges each case from the source before it opens the results, because seeing the results first makes the check not blind.
 - The check bead names the exact commit under test; the checker runs and reads everything at that commit, not in the shared checkout.
 - The checker reads the whole new output against the sources and files a bead for every error, whether or not A and B differ there. Verdict: `PASS` or `FAIL` as a note on its bead and on the fix bead.

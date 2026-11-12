@@ -8,6 +8,8 @@ What counts: a dependency of type `blocks` whose status is not `closed` (`bd sho
 closed in the same command counts as closed. `--force` does not get past it. A close whose reason says
 superseded, duplicate, not needed or won't do is allowed. The way out is
 the tracker's own: close the blocker first, or `bd dep remove <id> <blocker>` with a note saying why.
+A bead of type bug also needs a closed dependency labelled role:blind-checker (hive/FIXES.md 'The blind check'),
+because that check was skipped on four fixes in a row.
 If bd fails or the bead is unknown, the hook lets the command through (bd reports the error itself).
 """
 import json
@@ -19,6 +21,7 @@ from pathlib import Path
 
 # Closes that are not "done" closes.
 WASTE = re.compile(r"^(\w[\w ]{0,20}: )?(superseded|duplicate|not needed|won'?t (do|fix))\b", re.I)
+BLIND = "role:blind-checker"
 QUICK = re.compile(r"\bbd\b.*\b(close|done)\b", re.S)
 SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "\n"}
 GLOBAL_VALUE = {"-C", "--directory", "--db", "--database", "--actor", "--dolt-auto-commit"}
@@ -113,25 +116,37 @@ def _show(ids: list[str], cwd: str, bd_dir: str | None) -> list[dict]:
     return data if isinstance(data, list) else [data]
 
 
-def open_blockers(rec: dict, cwd: str) -> dict[str, list[str]]:
-    """{bead id: [open blocker ids]} for one close; empty when the close is allowed."""
+def refusals(rec: dict, cwd: str) -> tuple[dict[str, list[str]], list[str]]:
+    """({bead id: [open blocker ids]}, [bug ids with no closed blind check]) for one close; both empty when allowed."""
     ids = rec["ids"]
     if not ids:
-        return {}
+        return {}, []
     texts = _reason_text(rec, cwd)
     if texts and all(WASTE.match(t.strip()) for t in texts):
-        return {}
+        return {}, []
     closing = set(ids)
-    bad = {}
+    bad, bugs = {}, {}
     for b in _show(ids, cwd, rec["dir"]):
         if not isinstance(b, dict):
             continue
-        held = [d.get("id") for d in b.get("dependencies") or []
+        deps = [d for d in b.get("dependencies") or [] if d.get("id") != b.get("id")]
+        held = [d.get("id") for d in deps
                 if d.get("dependency_type") == "blocks" and d.get("status") != "closed"
-                and d.get("id") not in closing and d.get("id") != b.get("id")]
+                and d.get("id") not in closing]
         if held:
             bad[b.get("id")] = held
-    return bad
+        if b.get("issue_type") == "bug":
+            bugs[b.get("id")] = [d.get("id") for d in deps
+                                 if d.get("status") == "closed" or d.get("id") in closing]
+    return bad, unchecked(bugs, cwd, rec["dir"])
+
+
+def unchecked(bugs: dict[str, list[str]], cwd: str, bd_dir: str | None) -> list[str]:
+    """Bug ids (from {bug id: [closed dependency ids]}) with no closed dependency labelled role:blind-checker."""
+    want = sorted({d for ds in bugs.values() for d in ds if d})
+    checkers = {b.get("id") for b in (_show(want, cwd, bd_dir) if want else [])
+                if isinstance(b, dict) and BLIND in (b.get("labels") or [])}
+    return [bug for bug, ds in bugs.items() if not checkers & set(ds)]
 
 
 def main() -> int:
@@ -145,19 +160,29 @@ def main() -> int:
     if not QUICK.search(cmd):
         return 0
     cwd = data.get("cwd") or ""
-    bad = {}
+    bad, bugs = {}, []
     for rec in closes(cmd):
-        bad.update(open_blockers(rec, cwd))
-    if bad:
-        print(json.dumps(deny(bad)))
+        held, unc = refusals(rec, cwd)
+        bad.update(held)
+        bugs += unc
+    if bad or bugs:
+        print(json.dumps(deny(bad, bugs)))
     return 0
 
 
-def deny(bad: dict[str, list[str]]) -> dict:
-    what = "; ".join(f"{b} is blocked by {', '.join(h)}" for b, h in bad.items())
-    reason = (f"Refused: {what} (still open). Never close a bead past an open blocker; --force does not get past this. Close the blocker first, or if the link is wrong, "
-              "remove it with bd dep remove <id> <blocker> and a bd note saying why. If the bead is superseded "
-              "or a duplicate, start the reason with that word.")
+def deny(bad: dict[str, list[str]], bugs: list[str] = ()) -> dict:
+    parts = []
+    if bad:
+        what = "; ".join(f"{b} is blocked by {', '.join(h)}" for b, h in bad.items())
+        parts.append(f"Refused: {what} (still open). Never close a bead past an open blocker; --force does not get past this. "
+                     "Close the blocker first, or if the link is wrong, remove it with bd dep remove <id> <blocker> "
+                     "and a bd note saying why.")
+    if bugs:
+        parts.append(f"Refused: bug {', '.join(bugs)} has no closed {BLIND} bead it depends on (hive/FIXES.md "
+                     "'The blind check'). File the check bead with that label, bd dep add <bug> <check>, "
+                     "and close the bug after its verdict.")
+    parts.append("If the bead is superseded or a duplicate, start the reason with that word.")
+    reason = " ".join(parts)
     return {"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",

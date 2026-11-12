@@ -96,7 +96,7 @@ test('--log prints each day: warnings, answers, wave outcomes, notices and eggs 
   const days = out.split('\n').filter((l) => /^day \d+$/.test(l)).map((l) => Number(l.split(' ')[1]));
   const lastDay = Number(/\(day (\d+)\)$/m.exec(out)[1]);
   assert.ok(days.length > 0);
-  days.forEach((d, i) => assert.strictEqual(d, i, 'days are printed in order with none missing'));
+  days.forEach((d, i) => assert.strictEqual(d, i + 1, 'days are printed in order from day 1, as the browser counts, with none missing'));
   assert.ok(days[days.length - 1] >= lastDay - 1);
   assert.strictEqual(out.split('\n').filter((l) => l.startsWith('  eggs laid: ')).length, days.length);
   assert.match(out, /^ {2}warning: wave 1, about \d+ hornets, arrives day \d+/m);
@@ -107,6 +107,36 @@ test('--log prints each day: warnings, answers, wave outcomes, notices and eggs 
   const balanced = run('--seed', '7', '--strategy', 'balanced', '--log');
   assert.match(balanced, /^ {2}wave 1 over: (beaten|the hornets have gone);/m);
   assert.match(balanced, /^ {2}mix went back to Balanced \(/m);
+});
+
+// The browser shows 'Day ' + (floor(tick / ticksPerDay) + 1), at most the last
+// day of the season (game/ui/main.js). The runner must name the same day
+// (bead hive-test-7ri).
+test('every day the runner prints is the day the browser shows for the same tick', () => {
+  const shown = (tick) => Math.min(Math.floor(tick / balance.ticksPerDay) + 1, balance.daysPerSeason);
+  for (const strategy of ['change-nothing', 'balanced']) {
+    const out = run('--seed', '231350', '--strategy', strategy, '--log');
+    const lines = out.split('\n');
+    let current = null;
+    const arrivedOn = {};
+    const warnedFor = {};
+    for (const l of lines) {
+      const d = /^day (\d+)$/.exec(l);
+      if (d) current = Number(d[1]);
+      const w = /^ {2}warning: wave (\d+), about \d+ hornets, arrives day (\d+)/.exec(l);
+      if (w) warnedFor[w[1]] = Number(w[2]);
+      const a = /^ {2}wave (\d+) arrived: /.exec(l);
+      if (a) arrivedOn[a[1]] = current;
+    }
+    assert.ok(Object.keys(arrivedOn).length > 0, `${strategy}: a wave arrived`);
+    for (const wave of Object.keys(arrivedOn)) {
+      const tick = balance.hornets.waves[Number(wave) - 1].day * balance.ticksPerDay;
+      assert.strictEqual(arrivedOn[wave], shown(tick), `${strategy}: wave ${wave} is logged on the browser's day`);
+      if (wave in warnedFor) assert.strictEqual(warnedFor[wave], shown(tick), `${strategy}: the warning names the browser's day`);
+    }
+    const end = /^ending: .* at tick (\d+) \(day (\d+)\)$/m.exec(out);
+    assert.strictEqual(Number(end[2]), shown(Number(end[1])), `${strategy}: the ending names the browser's day`);
+  }
 });
 
 test('change-nothing on seed 7 lays each caste within one egg of Grow\'s share (spec check 4)', () => {
