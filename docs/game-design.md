@@ -82,6 +82,8 @@ The warning comes from a scout, so a colony with no scouts can be attacked with 
 
 **The fight.** Hornets fight the defenders at the hive entrance. Hornets that get past the defenders kill bees, eat brood and take honey. If hornets reach the queen, she dies and the game ends.
 
+The fight goes in rounds a few ticks apart. In each round every defender takes on one hornet, at the entrance first and then inside; either the hornet dies or the defender does. A hornet no defender takes on gets in. Each hornet inside kills one bee, eats one egg or larva and takes some honey each round, and has a small chance each round of reaching the queen. A hornet that has taken all the honey it can carry flies off. A wave is over when every hornet in it is dead or gone.
+
 ## After a wave
 
 If the player answered the warning with Defend, the mix goes back to the one set before the warning at the moment the last hornet of that wave is dead or gone. It does not go back after a set time, because a long wave would otherwise leave the hive short of defenders while hornets are still inside.
@@ -170,7 +172,7 @@ Grow lays few defenders: 1 egg in 20.
 | How many hornets in each wave | 6, then 14, then 22 |
 | How far ahead a scout can see a wave | 2 days |
 
-The other numbers the rules need, such as the starting colony, the cost of wax and comb, how long an egg and a larva take, and the size of the flower patches, are set in `game/data/balance.js` when the simulation is built.
+The other numbers the rules need, such as the starting colony, the length of a fight round, a defender's chance against one hornet, a hornet's chance of reaching the queen, the cost of wax and comb, how long an egg and a larva take, and the size of the flower patches, are set in `game/data/balance.js` when the simulation is built.
 
 ## Why a player might stop
 

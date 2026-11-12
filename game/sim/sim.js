@@ -14,7 +14,8 @@
  *
  * Each file sets one property on the global object BeeGame. The browser
  * loads the files with <script> tags, dependencies first
- * (data/balance.js, sim/rng.js, sim/sim.js, sim/record.js); node loads them
+ * (data/balance.js, sim/rng.js, sim/hornets.js, sim/sim.js, sim/record.js);
+ * node loads them
  * with require, and a file that needs another requires it when `require`
  * exists.
  *
@@ -29,7 +30,13 @@
  * { tick, choice } to game.choices; the same seed and the same choices at the
  * same ticks give the same game.state at every tick. game.proposeMatch(mix)
  * says what Match the mix now would do without doing it. game.score() gives
- * the four score parts and the total.
+ * the four score parts and the total. game.state.over, once the game ends,
+ * is { reason: 'season' | 'queen', ending: 'season over' | 'queen died', tick }.
+ *
+ * Hornets (game/sim/hornets.js): a scout that sees a coming wave sets
+ * game.state.warning and pauses the game; step() does not advance until the
+ * warning is answered. After a wave answered with Defend, the mix goes back
+ * and game.state.waveNotice offers Keep Defend.
  *
  * Choices:
  *   { type: 'setMix', mix: 'Gather' }            set one of the four mixes
@@ -37,15 +44,19 @@
  *   { type: 'nextEgg', caste }                   hand-pick the next egg (null cancels)
  *   { type: 'matchMix', mix?: 'Defend' }         confirm Match the mix now
  *   { type: 'fixNotice' }                        the laying-stopped notice's fix
+ *   { type: 'answerWarning', answer: 'defend'|'keep' }  answer a hornet warning
+ *   { type: 'keepDefend' }                       after a wave, put the Defend mix back
  */
 (function (root) {
   'use strict';
   var BeeGame = root.BeeGame = root.BeeGame || {};
   if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
     require('./rng.js');
+    require('./hornets.js');
     require('../data/balance.js');
   }
   var rng = BeeGame.rng;
+  var hornets = BeeGame.hornets;
 
   var CASTES = ['builder', 'nurse', 'forager', 'honeymaker', 'scout', 'defender'];
   var WORDS = {
@@ -157,7 +168,10 @@
       chambers: [],
       cells: [],
       bees: [],
-      patches: []
+      patches: [],
+      waves: hornets.initWaves(b),
+      warning: null,
+      waveNotice: null
     };
     st.patches = layMeadow(st, b);
     var left = s.cells;
@@ -660,6 +674,12 @@
     st.laidSinceMix = zeroShares();
   }
 
+  // What game/sim/hornets.js may use from here.
+  var HELPERS = {
+    clone: clone, setShares: setShares, freeBroodCell: freeBroodCell,
+    proposeMatch: proposeMatch, applyMatch: applyMatch
+  };
+
   function choose(game, choice) {
     var st = game.state;
     var b = game.balance;
@@ -695,6 +715,12 @@
         result = { caste: st.notice.fix.caste, shares: copyShares(fixed) };
         break;
       }
+      case 'answerWarning':
+        result = hornets.answerWarning(game, choice, ev, HELPERS);
+        break;
+      case 'keepDefend':
+        result = hornets.keepDefend(game, ev, HELPERS);
+        break;
       default:
         throw new Error('Unknown choice ' + choice.type);
     }
@@ -712,20 +738,26 @@
   function step(game) {
     var st = game.state;
     var ev = [];
-    if (st.paused || st.over) {
+    if (st.paused || st.over || st.warning) {
       game.events = ev;
       return ev;
     }
     queenLays(game, ev);
     growBrood(game, ev);
     work(game, ev);
+    hornets.act(game, ev, HELPERS);
     ageAdults(game, ev);
     regrow(game);
     reconcileStores(st, game.balance, ev);
     st.tick += 1;
-    if (st.tick >= seasonTicks(game.balance)) {
-      st.over = { reason: 'season', tick: st.tick };
-      ev.push({ type: 'gameOver', tick: st.tick, reason: 'season' });
+    if (!st.queen.alive) {
+      st.over = { reason: 'queen', ending: 'queen died', tick: st.tick };
+      ev.push({ type: 'gameOver', tick: st.tick, reason: 'queen', ending: 'queen died' });
+    } else if (st.tick >= seasonTicks(game.balance)) {
+      st.over = { reason: 'season', ending: 'season over', tick: st.tick };
+      ev.push({ type: 'gameOver', tick: st.tick, reason: 'season', ending: 'season over' });
+    } else {
+      hornets.watch(game, ev, HELPERS);
     }
     game.events = ev;
     return ev;

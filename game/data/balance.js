@@ -62,6 +62,21 @@
     defender: { guardTicks: 50 },
     idleTicks: 5,
 
+    // Murder hornets. Starting values; the tuning bead sets the final ones.
+    hornets: {
+      waves: [ // each larger than the one before
+        { day: 15, size: 6 },
+        { day: 30, size: 14 },
+        { day: 45, size: 22 }
+      ],
+      warnDays: 2, // how far ahead a scout can see a wave
+      roundTicks: 10, // ticks between rounds of the fight
+      defenderWinChance: 0.5, // a defender against one hornet: the chance the hornet dies
+      reachQueenChance: 0.1, // each round, the chance a hornet inside reaches the queen
+      honeyPerRound: 2, // honey one hornet inside takes each round
+      carry: 10 // honey a hornet carries before it flies off
+    },
+
     // The meadow, laid out from the seed.
     meadow: {
       patches: 12,

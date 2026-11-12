@@ -1,11 +1,14 @@
 // The simulation core: seeded rules, the colony mix, the player's choices and
-// the game record (bead hive-test-xne). Hornets come in a later bead.
+// the game record (bead hive-test-xne). These tests run on the balance with
+// no hornet waves, so the core rules are checked on their own; hornets are
+// checked in hornets.test.js.
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
 const sim = require('../sim/sim.js');
 const record = require('../sim/record.js');
-const balance = require('../data/balance.js');
+const fullBalance = require('../data/balance.js');
+const balance = { ...fullBalance, hornets: { ...fullBalance.hornets, waves: [] } };
 
 const CASTES = sim.CASTES;
 
