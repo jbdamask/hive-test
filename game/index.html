@@ -88,6 +88,12 @@
   .ctl-pm { white-space: nowrap; }
   .ctl-line { margin: 4px 0; }
   .ctl-line button { padding: 2px 8px; }
+  /* The next-egg line keeps one height whether or not an egg is picked, so
+     Match the mix now below it never moves: room for two lines of text, and
+     Cancel keeps its place beside the text even while it is invisible. */
+  #next-egg-line { display: flex; align-items: center; gap: 6px; min-height: 2.8em; }
+  #next-egg-line span { flex: 1; }
+  #next-egg-line button { flex: none; }
   .ctl-notice { background: var(--paper); border: 1px solid var(--edge); border-radius: 5px; padding: 5px 7px; }
   #laying-notice, #wave-notice { border-color: var(--accent); }
   button.on { background: var(--accent); font-weight: 700; }
@@ -177,7 +183,7 @@
       Defenders guard the entrance and fight hornets.</p>
     <p><b>Eggs</b> cost honey and pollen and need a clean, empty comb cell. A used cell is dirty until a nurse cleans it. If the queen stops laying, a notice says why and offers a fix.</p>
     <p><b>Murder hornets</b> attack in waves, each larger than the last. When a scout sees a wave coming, the game pauses and you answer Defend or Keep my mix. Hornets that get past the defenders kill bees, eat young and take honey. If they reach the queen, the game ends.</p>
-    <p><b>Points.</b> At the end of the season you score your living bees, all the honey made, your comb cells and your chambers, added up.</p>
+    <p><b>Points.</b> The score is counted when the game ends, whether the season runs out or hornets reach the queen. It adds up your living adult bees (not the queen, eggs or larvae), all the honey made, your comb cells and your chambers.</p>
     <p><b>Keys.</b> <kbd>Space</kbd> pauses and resumes. <kbd>1</kbd> is normal speed and <kbd>2</kbd> is fast speed. <kbd>H</kbd> opens and closes this page.</p>
     <p class="hint">The left side of the screen is the meadow, with the hive in the middle and flower patches around it; grey patches are not found yet. The right side is the inside of the hive.</p>
     <div class="row"><button id="help-close" class="primary" type="button">Close</button></div>
