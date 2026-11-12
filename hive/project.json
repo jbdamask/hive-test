@@ -4,7 +4,7 @@
   "owner": "John",
   "lead": "Chestnut",
   "user": "A game where bees have to build a hive, make honey, and defend the hive from murder hornets.",
-  "fast_tests": "python3 -m unittest discover -q -s hive/tests",
+  "fast_tests": "python3 -m unittest discover -q -s hive/tests && node --test game/tests/",
   "spend": "No pay-per-use spend of any kind; the cap is $0",
   "main_branch": "main",
   "remote": "origin",

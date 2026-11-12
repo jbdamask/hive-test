@@ -8,7 +8,7 @@ In one paragraph: the player is the queen. She lays eggs, and a colony mix the p
 
 The player is the queen, acting as the colony's mind. She stays inside the hive. The bees do their jobs without being told; the player decides what kind of bees the colony has. The player has five kinds of choice, and every choice goes into the game record.
 
-**Set the colony mix.** The mix gives each of the six castes a share, as a whole number. A caste's part of the eggs is its share divided by the sum of all six shares. Four ready-made mixes, Grow, Gather, Defend and Balanced, set all six shares in one click. A plus and a minus button next to each caste change that caste's share by one. The queen lays toward the mix: each egg becomes the caste that is furthest below its share of the eggs laid since the mix was last set. If every share is zero, the queen lays no eggs.
+**Set the colony mix.** The mix gives each of the six castes a share, as a whole number. A caste's part of the eggs is its share divided by the sum of all six shares. Four ready-made mixes, Grow, Gather, Defend and Balanced, set all six shares in one click. A plus and a minus button next to each caste change that caste's share by one. The queen lays toward the mix: each egg becomes the caste that is furthest below its share of the eggs laid since the mix was last set. Choosing a ready-made mix, pressing plus or minus, and a notice's fix button all set the mix, so the count starts again from there. Hand-picked eggs are not counted, so the mix carries on where it was after one. If every share is zero, the queen lays no eggs.
 
 **Pick the next egg's caste by hand.** At any time the player can choose the caste of the next egg. That one egg becomes the chosen caste, and the queen then goes back to laying by the mix.
 
@@ -41,7 +41,7 @@ The colony has five resources: nectar, pollen, honey, wax and comb cells.
 - **Pollen** comes in with foragers. Nurses feed it to larvae, and the queen needs it to lay.
 - **Honey** is made by honeymakers. Builders turn it into wax, nurses feed it to larvae, and the queen needs it to lay.
 - **Wax** is made by builders from honey and used to build comb cells and new chambers.
-- **Comb cells** hold honey, nectar, pollen or brood (eggs and larvae). Every store and every young bee needs a cell, so the amount of comb limits both how much the colony can store and how large it can grow.
+- **Comb cells** hold honey, nectar, pollen or brood (eggs and larvae). Every store and every young bee needs a cell, so the amount of comb limits both how much the colony can store and how large it can grow. Nectar, pollen or honey that finds no empty cell is lost.
 
 **Dirty cells.** A cell that has been used, because a bee has hatched out of it or its store has been used up, becomes dirty. A dirty cell cannot be used again until a nurse cleans it. A colony with too few nurses runs out of clean cells even when it has plenty of comb.
 
@@ -49,11 +49,11 @@ The colony has five resources: nectar, pollen, honey, wax and comb cells.
 
 ## When laying stops, and the one-line fix notice
 
-The queen stops laying when she cannot pay for an egg: there is no clean empty cell, or not enough honey, or not enough pollen. When that happens, a one-line notice names the cause and offers a fix, for example:
+The queen stops laying when she cannot pay for an egg: there is no clean empty cell, or not enough honey, or not enough pollen. Running out of cells has two causes: the cells are dirty, or every cell is full. When that happens, a one-line notice names the cause and offers a fix, for example:
 
 > The queen has stopped laying: no clean cells. More nurses would clean them. [Add nurses]
 
-The fix button adds one share to the caste it names; in this example, one share to Nurse. The player can undo it with that caste's minus button. The notice for too little honey names honeymakers, and the notice for too little pollen names foragers.
+The fix button adds one share to the caste it names; in this example, one share to Nurse. The player can undo it with that caste's minus button. The notice for too little honey names honeymakers, and the notice for too little pollen names foragers. When every cell is full and none is dirty, the notice says "no empty cells. More builders would build comb." and names builders.
 
 ## The life cycle
 
@@ -117,9 +117,9 @@ The end screen says which of the two happened and shows the four score parts, th
 
 The score has four parts, John's four measures:
 
-- **Colony size:** the number of living bees.
+- **Colony size:** the number of living adult bees, not counting the queen, eggs or larvae.
 - **Honey made:** all the honey made over the game, including honey later eaten or taken by hornets.
-- **Honeycomb:** the number of comb cells built.
+- **Honeycomb:** the number of comb cells in the hive, the starting comb included.
 - **Hive size:** the number of chambers in the hive.
 
 Each part is shown on screen during play. The total is the four parts added up. The parts are counted at the moment the game ends, whichever way it ends. Hornets killed are not scored.

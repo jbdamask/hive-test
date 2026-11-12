@@ -1,0 +1,80 @@
+/*
+ * Every balance number in the game. The rules (game/sim/) and the drawing
+ * (game/ui/) read them from here and hold none of their own. Starting values
+ * come from docs/game-design.md "Starting balance numbers"; when the two
+ * differ, this file is right. Module pattern: see the header of game/sim/sim.js.
+ */
+(function (root) {
+  'use strict';
+  var BeeGame = root.BeeGame = root.BeeGame || {};
+
+  BeeGame.balance = {
+    // Time.
+    ticksPerDay: 200,
+    daysPerSeason: 60,
+    ticksPerSecond: { normal: 10, fast: 30 },
+
+    // The four ready-made mixes: one whole-number share per caste.
+    startMix: 'Grow',
+    mixes: {
+      Grow: { builder: 6, nurse: 6, forager: 4, honeymaker: 2, scout: 1, defender: 1 },
+      Gather: { builder: 2, nurse: 3, forager: 7, honeymaker: 5, scout: 2, defender: 1 },
+      Defend: { builder: 1, nurse: 3, forager: 2, honeymaker: 1, scout: 1, defender: 12 },
+      Balanced: { builder: 3, nurse: 4, forager: 4, honeymaker: 3, scout: 2, defender: 4 }
+    },
+
+    // The colony at the start of a game.
+    start: {
+      bees: { builder: 3, nurse: 4, forager: 5, honeymaker: 3, scout: 2, defender: 3 },
+      maxAgeDays: 10, // starting adults are 0 to this many days old, drawn from the seed
+      honey: 60,
+      pollen: 30,
+      nectar: 0,
+      wax: 0,
+      chambers: 1,
+      cells: 40
+    },
+
+    // The queen and her eggs.
+    queen: { layTicks: 25, eggHoney: 2, eggPollen: 1 },
+
+    // Egg, larva, adult.
+    brood: { eggTicks: 600, larvaTicks: 1000, feedsNeeded: 2, larvaMaxTicks: 2400 },
+    adult: { lifeDays: 20 },
+
+    // The hive.
+    hive: {
+      cellsPerChamber: 60,
+      cellCapacity: 10, // units of honey, nectar or pollen one cell holds
+      storeSlackCells: 1 // empty store cells kept before one is let go (and turns dirty)
+    },
+
+    // What each caste's work costs and how long it takes, in ticks.
+    builder: {
+      waxTicks: 20, honeyPerWax: 1, honeyReserve: 30,
+      cellTicks: 30, waxPerCell: 2,
+      chamberTicks: 100, waxPerChamber: 10
+    },
+    nurse: { feedTicks: 10, feedHoney: 1, feedPollen: 1, cleanTicks: 15 },
+    forager: { baseTripTicks: 20, tripTicksPerDistance: 2, nectarLoad: 4, pollenLoad: 2 },
+    honeymaker: { ticks: 10, nectarPerHoney: 2 },
+    scout: { searchTicks: 50, findChance: 0.3 },
+    defender: { guardTicks: 50 },
+    idleTicks: 5,
+
+    // The meadow, laid out from the seed.
+    meadow: {
+      patches: 12,
+      knownAtStart: 2, // the nearest patches, known to the starting scouts
+      minDistance: 5,
+      maxDistance: 40,
+      nectarMin: 80,
+      nectarMax: 200,
+      pollenMin: 40,
+      pollenMax: 120,
+      regrowPerTick: 0.2
+    }
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = BeeGame.balance;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
