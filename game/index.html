@@ -80,6 +80,21 @@
   #record-text { width: 100%; height: 6em; font: 12px monospace; margin-top: 8px; }
   .hint { color: var(--muted); font-size: 12px; }
   kbd { border: 1px solid var(--edge); border-radius: 3px; padding: 0 4px; background: #fff; }
+  #controls h2 { font-size: 14px; margin: 0 0 6px; }
+  .ctl-row { display: flex; gap: 4px; flex-wrap: wrap; margin: 4px 0; }
+  .ctl-row button { padding: 3px 8px; }
+  .ctl-mix th { text-align: left; font-weight: 600; font-size: 12px; color: var(--muted); padding: 1px 4px; }
+  .ctl-mix th.n { text-align: right; }
+  .ctl-mix button { padding: 0 7px; min-width: 24px; }
+  .ctl-pm { white-space: nowrap; }
+  .ctl-line { margin: 4px 0; }
+  .ctl-line button { padding: 2px 8px; }
+  .ctl-notice { background: var(--paper); border: 1px solid var(--edge); border-radius: 5px; padding: 5px 7px; }
+  #laying-notice, #wave-notice { border-color: var(--accent); }
+  button.on { background: var(--accent); font-weight: 700; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  #warning .card { border-color: #a01e14; }
+  #warning-size { font-size: 16px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -173,6 +188,17 @@
   </div>
 </div>
 
+<div class="overlay" id="warning" hidden>
+  <div class="card" role="alertdialog" aria-labelledby="warning-heading" aria-describedby="warning-size">
+    <h2 id="warning-heading">A scout sees hornets coming</h2>
+    <p id="warning-size"></p>
+    <p><button id="warning-defend" class="primary" type="button">Defend</button> <span id="warning-defend-text"></span></p>
+    <p class="hint" id="warning-defend-moves"></p>
+    <p><button id="warning-keep" type="button">Keep my mix</button></p>
+    <p class="hint">The game waits for your answer.</p>
+  </div>
+</div>
+
 <div class="overlay" id="end" hidden>
   <div class="card">
     <h2 id="end-heading">The season is over</h2>
@@ -205,5 +231,6 @@
 <script src="sim/record.js"></script>
 <script src="ui/draw.js"></script>
 <script src="ui/main.js"></script>
+<script src="ui/controls.js"></script>
 </body>
 </html>
