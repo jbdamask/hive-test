@@ -8,8 +8,8 @@ What counts: a dependency of type `blocks` whose status is not `closed` (`bd sho
 closed in the same command counts as closed. `--force` does not get past it. A close whose reason says
 superseded, duplicate, not needed or won't do is allowed. The way out is
 the tracker's own: close the blocker first, or `bd dep remove <id> <blocker>` with a note saying why.
-A bead of type bug also needs a closed dependency labelled role:blind-checker (hive/FIXES.md 'The blind check'),
-because that check was skipped on four fixes in a row.
+A bead of type bug also needs a closed `blocks` dependency labelled role:blind-checker (hive/FIXES.md 'The blind
+check'), because that check was skipped on four fixes in a row. Other link types (discovered-from) do not count.
 If bd fails or the bead is unknown, the hook lets the command through (bd reports the error itself).
 """
 import json
@@ -136,8 +136,8 @@ def refusals(rec: dict, cwd: str) -> tuple[dict[str, list[str]], list[str]]:
         if held:
             bad[b.get("id")] = held
         if b.get("issue_type") == "bug":
-            bugs[b.get("id")] = [d.get("id") for d in deps
-                                 if d.get("status") == "closed" or d.get("id") in closing]
+            bugs[b.get("id")] = [d.get("id") for d in deps if d.get("dependency_type") == "blocks"
+                                 and (d.get("status") == "closed" or d.get("id") in closing)]
     return bad, unchecked(bugs, cwd, rec["dir"])
 
 

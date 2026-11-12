@@ -196,6 +196,17 @@ class Guards(unittest.TestCase):
         self.assertEqual(self.close_bug({"ab-1": {**bug, "dependencies": []}},
                                         'bd close ab-1 --reason "duplicate of ab-9"'), "")
 
+    def test_bug_filed_from_a_blind_check_is_not_checked_by_it(self):
+        # hive-test-e9t: filed discovered-from the check bead hive-test-e8v, it closed with no check of its own.
+        checker = {"id": "ab-2", "labels": ["role:blind-checker"], "status": "closed"}
+        found = {"id": "ab-2", "dependency_type": "discovered-from", "status": "closed"}
+        bug = {"id": "ab-1", "issue_type": "bug", "dependencies": [found]}
+        why = self.close_bug({"ab-1": bug, "ab-2": checker}, 'bd close ab-1 --reason "abc: fixed"')
+        self.assertIn("hive/FIXES.md 'The blind check'", why)
+        both = {**bug, "dependencies": [found, {**found, "id": "ab-3", "dependency_type": "blocks"}]}
+        self.assertEqual(self.close_bug({"ab-1": both, "ab-2": checker, "ab-3": {**checker, "id": "ab-3"}},
+                                        'bd close ab-1 --reason "abc: fixed"'), "")
+
     def test_non_bug_closes_without_a_blind_check(self):
         task = {"id": "ab-1", "issue_type": "task", "dependencies": []}
         self.assertEqual(self.close_bug({"ab-1": task}, 'bd close ab-1 --reason "abc: done"'), "")
