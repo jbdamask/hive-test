@@ -88,4 +88,68 @@ Two choices are John's and are in Decide below, not here: who the player is (que
 3. Should the prototype be put online for people other than you to play? Recommended: no; it stays in the repository and you open it from disk.
 
 ## What the user does
-To be written by the experience designer (hive/EXPERIENCE.md).
+
+**This section changes what will be built in five places.** The game can be made easy, but not exactly as "Design" above describes it. The spec writer and the red team should fold these into "Design" and "Acceptance" or reject them:
+
+1. **The colony mix replaces picking a caste per egg.** The player sets one mix of shares for the six castes, and the queen lays toward it. Four ready-made mixes (Grow, Gather, Defend, Balanced) set all six shares in one click; plus and minus buttons per caste fine-tune them. Picking a caste for a single egg is dropped. "Design" lists it as a player choice; the mix covers it.
+2. **The game starts with a mix already set.** It starts on Grow, whose shares live in `game/data/balance.js`. Grow builds the colony well but lays few defenders, so a player who changes nothing grows a large colony and then loses the queen to a later wave.
+3. **A scout's warning pauses the game and offers one answer.** The warning gives the wave's size and the defender count and offers "Defend" (switch to the Defend mix and move bees to defence) or "Keep my mix". After the wave is beaten, the mix goes back to what it was before. A notice says so and offers "Keep Defend".
+4. **Moving bees between castes is one click, not one bee at a time.** "Match the mix now" moves adult bees to fit the current mix. The game never asks which bee or how many.
+5. **The end screen gives a game record.** The record is the seed plus every choice the player made, with the in-game day of each, written as a strategy that `node game/sim/run.js` can replay. The same choices are open to the screen and to an assistant.
+
+Change 2 adds one acceptance check: over the 20 stored seeds, a stored "change nothing" strategy (Grow throughout, always "Keep my mix") loses the queen in at least 15. Without it, a player who does nothing could win, and the product test's "too little to do between waves" goes unchecked.
+
+### The steps
+
+The player does five things. The table counts the decisions in one full game with three hornet waves. "Before" means "Design" as written above, and "after" means with the five changes.
+
+| What the player does | Decisions before | Decisions after | If the player does nothing |
+|---|---|---|---|
+| Start a game | 2: type a seed or not, read help or not | 0 | Not possible: a first click on "Start" is needed. The game uses a new seed and the Grow mix. |
+| Decide what bees to make | 6 to set the standing order, then 1 per egg picked by hand | 0 needed; 1 per mix change chosen | The queen keeps laying to the Grow mix. |
+| Answer a hornet warning | 6 to rewrite the standing order, plus 3 per bee move (from, to, how many), so 9 per wave, or 27 in a game | 1 per wave, or 3 in a game | The game stays paused on the warning until the player answers. |
+| Go back after a wave | 6 per wave, or 18 in a game | 0; the game goes back by itself, and "Keep Defend" undoes that | The mix goes back to what it was before the warning. |
+| Finish and play again | 1: new seed or same seed | 1 | The end screen stays up. |
+| **Total, one game** | **about 54, plus 1 per egg picked by hand** | **4 needed: 3 warnings and 1 "play again"** | The colony grows and then loses the queen to a later wave. |
+
+The steps after, in the player's own words:
+
+1. **Start.** "I open `game/index.html`. The title screen shows the seed, three lines on how to play and a How to play button. I click Start."
+2. **Watch and steer.** "My bees get to work. If I want more honey, I click Gather. If I want to tune it, I press plus on Honeymaker." Space pauses the game, and 1 and 2 set the speed. A one-line notice explains anything that stops the queen from laying, together with the fix: "The queen has stopped laying: no clean cells. More nurses would clean them. [Add nurses]". Add nurses adds one nurse share and can be undone with minus.
+3. **Answer a warning.** "A scout spots hornets and the game pauses." The player sees:
+   > Hornets in 2 days: about 14. You have 4 defenders.
+   > [Defend] lays defenders first and moves 6 bees to defence now.
+   > [Keep my mix]
+   "I click Defend."
+4. **After the wave.** The game shows: "Wave beaten. 3 defenders lost. Your mix is back to Gather. [Keep Defend]". "I carry on."
+5. **End.** The end screen shows how the game ended (the season ended, or the hornets killed the queen), the four score parts, the total, the seed and "Copy game record". "I click Play again, or Replay this seed to try it differently."
+
+What the player is asked to accept, with what they would have seen before:
+- **At the warning.** Before: nothing would stop the game, and a player at fast speed could miss the scout's warning. After: the paused prompt above, with the numbers the player needs to judge it.
+- **On "Match the mix now".** Before: a from, to and how-many choice for each move. After: one line, "Move 4 foragers and 2 builders to defence. [Move] [Cancel]".
+- **After the wave.** Before: the player rewrote the standing order. After: the "Wave beaten" notice above.
+
+### By assistant
+
+The game runs from disk with no server, so an assistant cannot play a live game in the player's browser. It works through the simulation and the game record, and those offer the same choices as the screen: mixes, fine-tuning, Match the mix now, an answer to each warning, and the seed.
+
+> **Player:** I lost the queen on day 41. Here's my game record. What went wrong?
+> **Assistant:** (replays the record with the day-by-day log) You answered all three warnings with "Keep my mix". The third wave had 22 hornets against your 5 defenders.
+> **Player:** Would Defend on the third one have saved me?
+> **Assistant:** (replays the record with that one answer changed) Yes. The queen survives and your total goes from 0 to 1,840 [example figures]. Want the seed to try it yourself?
+> **Player:** Yes.
+> **Assistant:** Open `game/index.html?seed=48213`.
+
+The assistant needs these tools. They are commands, and except for the seed in the address, each is already part of "Built so it can be checked" or one of the changes above:
+
+| Tool | Takes | Returns |
+|---|---|---|
+| Run a season: `node game/sim/run.js` | a seed, and a strategy name or a game record file | how the game ended, the four score parts and the total |
+| The same command with `--log` | the same inputs | for each day: warnings, the answer given, the wave's outcome, mix changes and notices that laying stopped |
+| The same command with `--list-strategies` | nothing | the name of each stored strategy, with one line on what it does |
+| Open a seed: `game/index.html?seed=<n>` | a seed | the browser game started on that seed (new: the page reads the seed from its address) |
+| Copy game record (on the end screen) | a click by the player | the seed and every choice, with its day, as strategy text the first command reads |
+
+### Tested on a different field
+
+The same steps were tried on a made-up hospital ward. A charge nurse staffs a ward from six roles, and the emergency department warns of patient surges. Before the change, the nurse assigns each new hire a role and rewrites the staffing after every surge. After it, the ward runs on a staffing mix. A surge warning offers "Surge staffing" or "Keep", and staffing goes back by itself after the surge. The steps held, with one finding. Staffing must go back when the surge is over, not after a set time, or a long surge leaves the ward short. In the game, this means the mix goes back when the last hornet of the wave is dead or gone, not after a set number of days.
