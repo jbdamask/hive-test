@@ -79,7 +79,7 @@ class Sizes(unittest.TestCase):
             return context(hook("no_push_main.py", {"tool_name": "Bash", "agent_id": "a",
                                                     "tool_input": {"command": "git push origin HEAD:main"}}))
         if "no_close_blocked.py" in cmd:
-            return json.dumps(no_close_blocked.deny({"x-1": ["x-2", "x-3"]}))
+            return json.dumps(no_close_blocked.deny({"x-1": ["x-2", "x-3"]}, ["x-1", "x-4"]))
         if "worktree_write_guard.py" in cmd:
             return context(hook("worktree_write_guard.py", {"tool_name": "Bash", "cwd": "/r/.claude/worktrees/a",
                                                             "tool_input": {"command": "echo x > src/x.py"}}))
@@ -163,6 +163,42 @@ class Guards(unittest.TestCase):
         recs = no_close_blocked.closes('BEADS_ACTOR=e bd close ab-1 --reason "x: done"')
         self.assertEqual(recs[0]["ids"], ["ab-1"])
         self.assertEqual(no_close_blocked.closes("bd show ab-1"), [])
+
+    def close_bug(self, beads, cmd):
+        """Run the hook on `cmd` with bd show answered from `beads` ({id: bead}); return the deny reason or ''."""
+        real = no_close_blocked._show
+        no_close_blocked._show = lambda ids, cwd, d: [beads[i] for i in ids if i in beads]
+        try:
+            bad, bugs = {}, []
+            for rec in no_close_blocked.closes(cmd):
+                held, unc = no_close_blocked.refusals(rec, "")
+                bad.update(held)
+                bugs += unc
+        finally:
+            no_close_blocked._show = real
+        if not (bad or bugs):
+            return ""
+        return no_close_blocked.deny(bad, bugs)["hookSpecificOutput"]["permissionDecisionReason"]
+
+    def test_bug_closes_only_after_a_closed_blind_check(self):
+        dep = {"id": "ab-2", "dependency_type": "blocks", "status": "closed"}
+        bug = {"id": "ab-1", "issue_type": "bug", "dependencies": [dep]}
+        checker = {"id": "ab-2", "labels": ["role:blind-checker"], "status": "closed"}
+        other = {"id": "ab-2", "labels": ["role:red-team"], "status": "closed"}
+        why = self.close_bug({"ab-1": {**bug, "dependencies": []}}, 'bd close ab-1 --reason "abc: fixed"')
+        self.assertIn("hive/FIXES.md 'The blind check'", why)
+        self.assertIn("ab-1", why)
+        self.assertTrue(self.close_bug({"ab-1": bug, "ab-2": other}, 'bd close ab-1 --reason "abc: fixed"'))
+        self.assertEqual(self.close_bug({"ab-1": bug, "ab-2": checker}, 'bd close ab-1 --reason "abc: fixed"'), "")
+        open_dep = {**bug, "dependencies": [{**dep, "status": "open"}]}
+        self.assertTrue(self.close_bug({"ab-1": open_dep, "ab-2": {**checker, "status": "open"}}, "bd close ab-1"))
+        self.assertEqual(self.close_bug({"ab-1": open_dep, "ab-2": checker}, "bd close ab-2 ab-1"), "")
+        self.assertEqual(self.close_bug({"ab-1": {**bug, "dependencies": []}},
+                                        'bd close ab-1 --reason "duplicate of ab-9"'), "")
+
+    def test_non_bug_closes_without_a_blind_check(self):
+        task = {"id": "ab-1", "issue_type": "task", "dependencies": []}
+        self.assertEqual(self.close_bug({"ab-1": task}, 'bd close ab-1 --reason "abc: done"'), "")
 
 
 if __name__ == "__main__":
