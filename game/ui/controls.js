@@ -125,7 +125,6 @@
   var eggCancel = el('button', { type: 'button' }, 'Cancel');
   eggCancel.addEventListener('click', function () { choose({ type: 'nextEgg', caste: null }); });
   eggLine.appendChild(eggText);
-  eggLine.appendChild(doc.createTextNode(' '));
   eggLine.appendChild(eggCancel);
   box.appendChild(eggLine);
 
@@ -240,7 +239,11 @@
 
     var picked = shown.nextEggCaste;
     setText(eggText, picked ? 'Next egg: ' + WORDS[picked].one + ', then the mix again.' : 'Next egg: by the mix.');
-    setHidden(eggCancel, !picked || !live);
+    // Invisible, not removed: Cancel keeps its room so nothing below moves.
+    var noCancel = !picked || !live;
+    var vis = noCancel ? 'hidden' : '';
+    if (eggCancel.style.visibility !== vis) eggCancel.style.visibility = vis;
+    eggCancel.setAttribute('aria-hidden', noCancel ? 'true' : 'false');
 
     matchButton.disabled = !live;
     if (!live) ui.matchOpen = false;
