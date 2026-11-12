@@ -1,0 +1,337 @@
+{
+  "commit_message": "beads for #1",
+  "nodes": [
+    {
+      "key": "epic",
+      "type": "epic",
+      "title": "Bee colony game: design and playable prototype (#1)",
+      "priority": 1,
+      "description": "Issue #1: a game design document for John, then a playable in-browser prototype opened from disk. The player is the queen; a colony mix decides what eggs become, the queen can hand-pick the next egg, bees work on their own, hornet waves grow and each warning pauses for a one-click answer. The spec is the requirement; its DECIDED lines and John's answers are settled.\n\nRead: hive/specs/1-bee-colony-game.md\nTree: shared",
+      "acceptance_criteria": "Each check has a yes or no answer. \"The 20 held-out seeds\" are the seeds in the seed file under `game/tests/` (check 17).\n\n1. `docs/game-design.md` exists and covers the player and the five kinds of choice, the six castes, the resources, the life cycle, the meadow, the hornets and the warning, the end of a game, the points and the game record.\n2. Opening `game/index.html` from disk in current desktop Chrome, with the network off, shows the title screen with the seed and a How to play button, then a game that starts on one click, with no errors in the browser console.\n3. A new game starts on the Grow mix, and the shares shown match Grow's shares in `game/data/balance.js`. Clicking each of Grow, Gather, Defend and Balanced sets all six shares to that mix in one click, and plus or minus on a caste changes only that caste's share.\n4. With one mix held for a whole season, no hand-picked eggs and every warning answered Keep my mix, `node game/sim/run.js --log` shows the eggs laid of each caste within one egg of the mix's share of all eggs laid.\n5. In the browser, picking a caste for the next egg makes that egg hatch as that caste, and the egg after it follows the mix again. The player can do this at any time during play.\n6. \"Match the mix now\" shows one line naming every move before anything happens, and after Move, the adult bees of each caste are within one of the mix's share of all adults. At no point does the game ask the player to choose a bee or a number of bees.\n7. During a game, the player can see each caste doing its job: comb cells and chambers being added, larvae fed, dirty cells cleaned, nectar and pollen carried in, nectar turned into honey, a new patch found by a scout, and defenders fighting hornets.\n8. At least three hornet waves arrive in a full season, each larger than the one before, and a scout gives warning before at least one of them.\n9. Each warning pauses the game and shows the wave's size, when it arrives, the defender count, Defend and Keep my mix; the game does not go on until one is clicked. Defend switches to the Defend mix and matches the mix at once.\n10. After a wave answered with Defend, the mix goes back to the one before the warning at the tick the last hornet of that wave is dead or gone; a notice says so and offers Keep Defend, and clicking it puts the Defend mix back.\n11. When the queen stops laying, a notice names the cause and offers a fix, and clicking the fix adds one share to the caste it names.\n12. The four score parts and the total are on screen during play and on the end screen.\n13. A game ends in one of two ways, the season ending or the queen dying; the end screen says which and shows the seed, Copy game record, Play again and Replay this seed.\n14. `node game/sim/run.js` gives the same output twice for the same seed and strategy, and for the same game record.\n15. For two browser games played to the end, one at each speed, each with at least one mix change, one hand-picked egg and one warning answered, replaying the copied game record with `node game/sim/run.js --record <file>` prints the same ending, the same four score parts and the same total as the browser's end screen.\n16. Opening `game/index.html?seed=<n>` starts a game on seed n, and the seed shown on screen is n.\n17. The 20 held-out seeds were drawn after tuning stopped: the last commit that changes `game/data/balance.js` is an ancestor of the commit that first added the seed file. Checked with `git merge-base --is-ancestor $(git log -1 --format=%H -- game/data/balance.js) $(git log --diff-filter=A --format=%H -- <seed file> | tail -1)`, which exits 0.\n18. Over the 20 held-out seeds, three stored strategies give these results:\n    - \"No defenders\" loses the queen before the season ends in at least 15.\n    - \"Balanced\" survives the season in at least 15.\n    - \"Change nothing\" (Grow throughout, every warning answered Keep my mix, no hand-picked eggs) loses the queen in at least 15.\n19. Over the same 20 seeds, \"Balanced\" scores higher than a stored \"lay nothing after the start\" strategy in all 20. (The player's choices matter.)\n20. A full game at normal speed lasts between 15 and 25 minutes, not counting time paused, when the queen survives.\n21. `node game/sim/run.js --list-strategies` names every stored strategy, and `--log` prints for each day the items listed under \"Built so it can be checked\".\n22. `node --test game/tests/` passes.",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": []
+    },
+    {
+      "key": "design",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Write the game design document docs/game-design.md",
+      "priority": 1,
+      "description": "Write `docs/game-design.md` for John: the design the prototype follows (spec \"What will be built\" item 1). Expand the spec's \"Design\" section into a readable document; do not add features the spec does not name.\n\n- Sections, in this order: the player (the queen) and her five kinds of choice; the six castes and their jobs; the resources and comb cells (dirty cells, what an egg costs); when laying stops and the one-line fix notice; the life cycle; the meadow; murder hornets, the warning and its two answers; after a wave (mix goes back when the last hornet is dead or gone, Keep Defend); time (ticks, days, pause, two speeds, season length 15 to 25 minutes); how a game ends; the points; the seed and `?seed=`; the game record (seed plus every choice with its tick, not by day).\n- A table of starting balance numbers: the shares of each of the four mixes (Grow, Gather, Defend, Balanced; Grow lays few defenders), egg cost, adult lifetime, ticks per day, days per season, ticks per second at normal and fast speed, the wave schedule and wave sizes. Say these are starting values and that the live values are in `game/data/balance.js`, which the tuning bead changes.\n- A section \"Why a player might stop\" naming the three reasons from the spec's \"How it serves the product test\" and what the design does about each.\n- Write for John: plain sentences, no code.\n\nRead: hive/specs/1-bee-colony-game.md, hive/WRITING.md\nTree: shared",
+      "acceptance_criteria": "- `docs/game-design.md` exists and has one section for each of: the player and the five kinds of choice, the six castes, the resources, laying stopped, the life cycle, the meadow, the hornets and the warning, after a wave, time, the end of a game, the points, the seed, the game record\n- `docs/game-design.md` has a table that lists the six shares of each of Grow, Gather, Defend and Balanced\n- `docs/game-design.md` has a section that names the three reasons a player might stop from the spec and what the design does about each",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "docs/game-design.md"
+        ],
+        "new_files": [
+          "docs/game-design.md"
+        ]
+      }
+    },
+    {
+      "key": "simcore",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Simulation core: seeded rules, colony mix, choices and game record (no hornets yet)",
+      "priority": 1,
+      "description": "Build the rules of the game as plain JavaScript that runs both in node and in the browser opened from disk (spec \"Built so it can be checked\"). No drawing, no input, no hornets (the next bead adds them).\n\nDecisions already made (lead):\n- Module pattern: Chrome blocks ES modules on file://, so every file under `game/sim/` and `game/data/` is a classic script. Each sets a property on one global object `BeeGame` (`globalThis.BeeGame = globalThis.BeeGame || {}`) and, when `module` exists, also sets `module.exports`. The browser loads them with script tags; node with `require`. Write this pattern as a header comment at the top of `game/sim/sim.js`; later beads follow it.\n- `game/data/balance.js`: every balance number (see check 1 in the spec's \"Checks every feature passes\"), including the four mixes Grow, Gather, Defend and Balanced (six shares each; Grow lays few defenders), ticks per day, days per season, and ticks per second at normal and fast speed (`ticksPerSecond.normal`, `ticksPerSecond.fast`). Start from the table in `docs/game-design.md`.\n- `game/sim/rng.js`: a small seeded random number generator; all randomness in the game comes from it.\n- `game/sim/sim.js`: `createGame(seed, balance)` returns a game; `game.step()` advances one tick; `game.choose(choice)` applies a player choice at the current tick and appends it with its tick to `game.choices`. Choices: set a mix by name, plus or minus one share of a caste, pick the next egg's caste, propose Match the mix now for the current mix or for a named mix (returns the moves, the number of bees moved and the one-line text, e.g. \"Move 4 foragers and 2 builders to defence.\") and confirm it. Laying: each egg becomes the caste furthest below its share of the eggs laid since the mix was last set; a hand-picked egg overrides that once; when every share is 0 the queen lays no eggs. Implement castes, resources (nectar, pollen, honey, wax, comb cells, dirty cells), egg, larva and adult with a lifetime, the meadow of patches laid out from the seed (they run dry and grow back; foragers only use patches a scout found), chambers, the laying-stopped notice with its fix (adds one share to the caste it names), the four score parts (living bees, honey made over the game, comb cells built, chambers) and the end at the last day of the season.\n- Each adult bee has a `caste`, a `task` and a `target` (a cell, chamber or patch id) in the game state, and each tick emits events (egg laid, cell built, chamber added, larva fed, cell cleaned, nectar or pollen delivered, honey made, patch found, notice shown), so the drawing and the run log can show each caste at work without reading the rules.\n- The game holds a `paused` flag reserved for the hornet warning (next bead); speed and the pause key are not part of the simulation.\n- `game/sim/record.js`: turns a game's seed and choices into text and back. Replaying that text into a new game gives the same state at every tick.\n- `game/tests/index.js` loads every `*.test.js` beside it. On node 24, `node --test game/tests/` treats the directory as a module and fails unless it has an `index.js`; this file makes spec check 22's command work. Other beads add their own `*.test.js` files and never edit `index.js`.\n- `game/tests/no-tuned-numbers.test.js`: fails when a file under `game/sim/` or `game/ui/` has a number literal other than 0 or 1 on a line without a comment saying why it is not balance (spec \"Checks every feature passes\" 1). Numbers in `game/data/` are allowed.\n- In `hive/project.json`, set `fast_tests` to `python3 -m unittest discover -q -s hive/tests && node --test game/tests/` so the landing tool runs the game's tests.\n- If building shows the design document is wrong, change `docs/game-design.md` in the same commit.\n\nRead: hive/specs/1-bee-colony-game.md, docs/game-design.md, hive/BUILD.md, hive/PROJECT.md, hive/project.json\nTree: worktree",
+      "acceptance_criteria": "- `node --test game/tests/` exits 0, and exits 1 when a `game/tests/*.test.js` file has a failing test\n- `game/tests/sim-core.test.js` shows that two games with the same seed and the same choices at the same ticks have equal state after a full season\n- `game/tests/sim-core.test.js` shows that with one mix held for a season and no hand-picked eggs, the eggs laid of each caste are within one egg of the mix's share of all eggs laid\n- `game/tests/sim-core.test.js` shows that a hand-picked egg becomes the chosen caste and the next egg follows the mix again\n- `game/tests/sim-core.test.js` shows that after Match the mix now is confirmed, the adults of each caste are within one of the mix's share of all adults, and the proposal text names every move\n- `game/tests/sim-core.test.js` shows that when laying stops the notice names the cause, and applying its fix adds one share to the caste it names\n- `game/tests/sim-core.test.js` shows that a game replayed from `game/sim/record.js` text has the same score parts and ending as the original\n- `game/data/balance.js` defines Grow, Gather, Defend and Balanced with six shares each, and `ticksPerSecond.normal` and `ticksPerSecond.fast`\n- `game/tests/no-tuned-numbers.test.js` passes on the bead's files and fails on a test file containing a line `x = 7;` under a temporary `game/sim/` path\n- `hive/project.json` `fast_tests` is `python3 -m unittest discover -q -s hive/tests && node --test game/tests/`\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/data/balance.js",
+          "game/sim/rng.js",
+          "game/sim/sim.js",
+          "game/sim/record.js",
+          "game/tests/index.js",
+          "game/tests/sim-core.test.js",
+          "game/tests/no-tuned-numbers.test.js",
+          "hive/project.json",
+          "docs/game-design.md"
+        ],
+        "new_files": [
+          "game/data/balance.js",
+          "game/sim/rng.js",
+          "game/sim/sim.js",
+          "game/sim/record.js",
+          "game/tests/index.js",
+          "game/tests/sim-core.test.js",
+          "game/tests/no-tuned-numbers.test.js"
+        ]
+      }
+    },
+    {
+      "key": "hornets",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Hornet waves, warnings, Defend and Keep my mix, after-wave return and queen death",
+      "priority": 1,
+      "description": "Add murder hornets to the simulation (spec \"Design\": \"Murder hornets\" and \"After a wave\"; acceptance checks 8 to 10 and 13 on the simulation side). Follow the module pattern in the header of `game/sim/sim.js`.\n\n- `game/sim/hornets.js`: waves at set times from `game/data/balance.js`, each larger than the last. Hornets fight defenders at the entrance; hornets that get in kill bees, eat brood and take honey; if they reach the queen the game ends with ending \"queen died\" (the other ending is \"season over\").\n- A scout that sees a coming wave raises a warning: the game sets `paused` and `game.step()` does not advance until the warning is answered. The warning carries the wave's size, ticks or days until it arrives, the defender count, and how many bees Defend would move now (the Match the mix now proposal for the Defend mix), so the prompt can say \"[Defend] lays defenders first and moves 6 bees to defence now\". The answers are choices: Defend (switch to the Defend mix and match the mix at once) or Keep my mix. A warning answer is recorded with the tick of its warning.\n- After a wave answered with Defend, at the tick the last hornet of that wave is dead or gone, the mix goes back to the one set before the warning and a notice says so with the defenders lost and offers Keep Defend, a choice that puts the Defend mix back. Bees are not moved back.\n- Events for the run log and drawing: warning raised, warning answered, wave arrived, fight, bees lost, wave over (with outcome), mix restored.\n- Wire hornets into `game/sim/sim.js`; add wave numbers to `game/data/balance.js`. Starting numbers only; the tuning bead sets the final ones.\n- If building shows the design document is wrong, change `docs/game-design.md` in the same commit.\n\nRead: hive/specs/1-bee-colony-game.md, docs/game-design.md, game/sim/sim.js, game/data/balance.js, game/sim/record.js\nTree: worktree",
+      "acceptance_criteria": "- `game/tests/hornets.test.js` shows at least three waves in a full season on seed 1, each larger than the one before, with a warning before at least one\n- `game/tests/hornets.test.js` shows that while a warning is unanswered `game.step()` leaves the tick unchanged, and the warning has the wave size, arrival time, defender count and the number of bees Defend would move\n- `game/tests/hornets.test.js` shows that Defend sets the Defend mix and matches the adults to it in the same tick\n- `game/tests/hornets.test.js` shows that after a Defend wave the mix returns to the earlier one at the tick the last hornet is dead or gone, with a notice offering Keep Defend, and Keep Defend restores the Defend mix\n- `game/tests/hornets.test.js` shows a game with no defenders ending with ending \"queen died\"\n- `game/tests/hornets.test.js` shows that a game with warning answers, replayed from its `game/sim/record.js` text, has the same ending and score parts\n- `node --test game/tests/` exits 0\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/sim/hornets.js",
+          "game/sim/sim.js",
+          "game/data/balance.js",
+          "game/tests/hornets.test.js",
+          "docs/game-design.md"
+        ],
+        "new_files": [
+          "game/sim/hornets.js",
+          "game/tests/hornets.test.js"
+        ]
+      }
+    },
+    {
+      "key": "runner",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Command-line runner game/sim/run.js and stored strategies",
+      "priority": 1,
+      "description": "Build the command an assistant and the checks use to play a season without a browser (spec \"Built so it can be checked\" and \"By assistant\"; acceptance checks 4, 14 and 21). Follow the module pattern in the header of `game/sim/sim.js`. Do not change `game/sim/` rules files or `game/data/balance.js` (other beads own them now); if the simulation lacks something you need, file a bead that blocks this one.\n\n- `game/sim/run.js`: `--seed <n> --strategy <name>` plays a whole season and prints how the game ended, the four score parts and the total. `--record <file>` replays a game record text instead. `--log` adds, for each day: warnings, the answer given, the wave's outcome, mix changes, hand-picked eggs, laying-stopped notices, and eggs laid of each caste. `--list-strategies` prints each stored strategy's name with one line on what it does. Same input, same output, byte for byte.\n- `game/data/strategies.js`: strategies as data in the same form as a game record (timed choices) plus a rule for answering warnings. At least these, with these names: `no-defenders` (a mix with no defender share all season, Keep my mix), `balanced` (Balanced mix, Defend on every warning), `change-nothing` (Grow throughout, every warning Keep my mix, no hand-picked eggs), `lay-nothing` (at tick 0 every share is set to 0, so the queen lays nothing after the start; Keep my mix).\n\nRead: hive/specs/1-bee-colony-game.md, game/sim/sim.js, game/sim/hornets.js, game/sim/record.js, game/data/balance.js\nTree: worktree",
+      "acceptance_criteria": "- `node game/sim/run.js --list-strategies` prints the names `no-defenders`, `balanced`, `change-nothing` and `lay-nothing`, each with one line\n- `node game/sim/run.js --seed 7 --strategy balanced` prints the ending, the four score parts and the total, and running it twice gives identical output\n- `node game/sim/run.js --record <file>` on a record written by `game/sim/record.js` prints identical output on two runs\n- `node game/sim/run.js --seed 7 --strategy change-nothing --log` prints, for each day, warnings, answers, wave outcomes, mix changes, hand-picked eggs, laying-stopped notices and eggs laid of each caste\n- `game/tests/run.test.js` shows that for `change-nothing` on seed 7 the eggs laid of each caste over the season are within one egg of Grow's share of all eggs laid (spec check 4)\n- `node --test game/tests/` exits 0\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/sim/run.js",
+          "game/data/strategies.js",
+          "game/tests/run.test.js"
+        ],
+        "new_files": [
+          "game/sim/run.js",
+          "game/data/strategies.js",
+          "game/tests/run.test.js"
+        ]
+      }
+    },
+    {
+      "key": "uishell",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Browser page: title, help, game loop, drawing, score, end screen, seed in address",
+      "priority": 1,
+      "description": "Build the page the player opens from disk (spec \"What will be built\" item 2, \"Time\", \"Points\", \"Seed\", \"How to play\"; acceptance checks 2, 7, 12, 13, 16). Plain JavaScript and canvas, no outside library, no network. Load `game/data/balance.js` and the `game/sim/` files with classic script tags (module pattern in the header of `game/sim/sim.js`). Do not change `game/sim/` or `game/data/balance.js`; if the simulation lacks something you need, file a bead that blocks this one. The controls (mix panel, next-egg picker, Match the mix now, warning prompt, notices) are the next bead: leave an empty element `<div id=\"controls\"></div>` for them. Until then, a warning stops the game; to check the end screen and the fights, answer warnings from the browser console with `window.beeGame.choose(...)`.\n\n- `game/index.html`: title screen with the seed, three lines on how to play, a field to type a seed, How to play and Start. `?seed=<n>` starts on seed n. Help screen reachable at any time (a button and a key), readable before the first game.\n- `game/ui/main.js`: game loop running `ticksPerSecond.normal` or `ticksPerSecond.fast` ticks per second from `game/data/balance.js`; Space pauses, keys 1 and 2 set the speed. Speed and pause never go into the game record. When `game.paused` is set by a warning, the loop runs no ticks. Expose the running game as `window.beeGame` so a checker can read the tick, score and choices.\n- `game/ui/draw.js`: shapes and colour only. The hive's cells and chambers, brood, stores, the meadow and its patches, bees by caste doing their task (use each bee's `task` and `target` and the tick's events) so the player can see comb and chambers added, larvae fed, dirty cells cleaned, nectar and pollen carried in, honey made, a new patch found, and defenders fighting hornets.\n- Live display of the four score parts and the total, the seed, the day and the speed.\n- End screen: how the game ended, the four parts, the total, the seed, Copy game record (text from `game/sim/record.js`), Play again (new seed) and Replay this seed.\n- Layout and drawing numbers go in `game/data/layout.js`; `game/tests/no-tuned-numbers.test.js` scans `game/ui/`.\n\nRead: hive/specs/1-bee-colony-game.md, docs/game-design.md, game/sim/sim.js, game/sim/hornets.js, game/sim/record.js, game/data/balance.js, game/tests/no-tuned-numbers.test.js\nTree: worktree",
+      "acceptance_criteria": "- Opening `game/index.html` from disk in desktop Chrome with the network off shows the title screen with the seed and a How to play button, and Start begins a game; the console shows no errors\n- Opening `game/index.html?seed=4242` starts a game on seed 4242 and the seed shown is 4242\n- During play the four score parts and the total are on screen, and Space, 1 and 2 pause and set the speed\n- During play the screen shows comb cells and chambers added, larvae fed, dirty cells cleaned, nectar and pollen carried in, honey made, a patch found and defenders fighting hornets\n- The end screen shows the ending, the four parts, the total, the seed, Copy game record, Play again and Replay this seed\n- `node --test game/tests/` exits 0\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/index.html",
+          "game/ui/main.js",
+          "game/ui/draw.js",
+          "game/data/layout.js"
+        ],
+        "new_files": [
+          "game/index.html",
+          "game/ui/main.js",
+          "game/ui/draw.js",
+          "game/data/layout.js"
+        ]
+      }
+    },
+    {
+      "key": "uicontrols",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Browser controls: colony mix, next egg, Match the mix now, warning prompt, notices",
+      "priority": 1,
+      "description": "Add the player's controls to the page (spec \"Design\": the five kinds of choice, \"Laying stopped\", \"Murder hornets\", \"After a wave\", and \"What the user does\"; acceptance checks 3, 5, 6, 9, 10, 11). Every control calls `game.choose(...)` so the choice goes into the game record with its tick. Do not change `game/sim/` or `game/data/balance.js`; if the simulation lacks something you need, file a bead that blocks this one. Layout numbers go in `game/data/layout.js` (made by the shell bead); add to it.\n\n- `game/ui/controls.js`, mounted in `<div id=\"controls\">` of `game/index.html` (add its script tag):\n  - Mix panel: the six shares shown; Grow, Gather, Defend, Balanced buttons set all six in one click; plus and minus per caste change only that share.\n  - Next egg: pick a caste for the next egg at any time; that egg only.\n  - Match the mix now: shows the one line naming every move (\"Move 4 foragers and 2 builders to defence. [Move] [Cancel]\") before anything happens. Never asks which bee or how many.\n  - Warning prompt while the game is paused by a warning: wave size, when it arrives, the defender count, how many bees Defend moves now, Defend and Keep my mix (wording from the spec's \"What the user does\" step 3). Nothing else resumes the game.\n  - Notices: \"Wave beaten\" with defenders lost and the mix restored, with Keep Defend; laying stopped, with its fix button (for example Add nurses).\n\nRead: hive/specs/1-bee-colony-game.md, docs/game-design.md, game/index.html, game/ui/main.js, game/sim/sim.js, game/sim/hornets.js, game/data/layout.js\nTree: worktree",
+      "acceptance_criteria": "- In desktop Chrome a new game shows the Grow mix with the shares in `game/data/balance.js`; each of Grow, Gather, Defend and Balanced sets all six shares in one click, and plus or minus changes only that caste's share\n- Picking a caste for the next egg makes that egg hatch as that caste and the egg after it follows the mix (read from `window.beeGame`)\n- Match the mix now shows one line naming every move before anything changes; after Move the adults of each caste are within one of the mix's share\n- A warning pauses the game and shows the wave size, arrival, defender count, Defend and Keep my mix; the tick in `window.beeGame` does not advance until one is clicked\n- After a wave answered with Defend, the Wave beaten notice appears with Keep Defend, and clicking it shows the Defend mix again\n- The laying-stopped notice names the cause, and its fix button adds one share to the caste it names\n- The browser console shows no errors during a game\n- `node --test game/tests/` exits 0\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/ui/controls.js",
+          "game/index.html",
+          "game/data/layout.js"
+        ],
+        "new_files": [
+          "game/ui/controls.js"
+        ]
+      }
+    },
+    {
+      "key": "tune",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Tune game/data/balance.js so the strategies and season length meet the spec on tuning seeds 1 to 20",
+      "priority": 1,
+      "description": "Set the balance numbers so the game meets the spec's targets (acceptance checks 8, 18, 19, 20) on tuning seeds 1 to 20. These seeds are for tuning only; the held-out seeds are drawn after this bead lands, by another bead. Change only `game/data/balance.js` and, where the numbers or the design change, `docs/game-design.md` in the same commit. Do not change the strategies in `game/data/strategies.js` or the rules in `game/sim/`; if the targets cannot be met by numbers alone, write a `PREMISE:` note and file a bead.\n\nTargets on seeds 1 to 20, by `node game/sim/run.js --seed <n> --strategy <name>`:\n- `no-defenders` loses the queen before the season ends in at least 15; `balanced` survives in at least 15; `change-nothing` loses the queen in at least 15 (Grow grows well but lays few defenders).\n- `balanced` scores higher than `lay-nothing` on all 20.\n- At least three waves per season, each larger than the last, with a warning before at least one.\n- Season length at normal speed: days per season x ticks per day / `ticksPerSecond.normal` is between 900 and 1500 seconds.\n\nPut these as `game/tests/tuning.test.js` (seeds 1 to 20) and `game/tests/season-length.test.js`.\n\nRead: hive/specs/1-bee-colony-game.md, docs/game-design.md, game/data/balance.js, game/data/strategies.js, game/sim/run.js\nTree: worktree",
+      "acceptance_criteria": "- `game/tests/tuning.test.js` passes and asserts, on seeds 1 to 20, that `no-defenders` loses the queen in at least 15, `balanced` survives in at least 15, `change-nothing` loses the queen in at least 15, and `balanced` outscores `lay-nothing` in all 20\n- `game/tests/tuning.test.js` asserts at least three waves per season on seeds 1 to 20, each larger than the last, with a warning before at least one\n- `game/tests/season-length.test.js` passes and asserts that a full season at `ticksPerSecond.normal` lasts between 900 and 1500 seconds\n- The shares and numbers in `docs/game-design.md` match `game/data/balance.js`\n- `node --test game/tests/` exits 0\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/data/balance.js",
+          "docs/game-design.md",
+          "game/tests/tuning.test.js",
+          "game/tests/season-length.test.js"
+        ],
+        "new_files": [
+          "game/tests/tuning.test.js",
+          "game/tests/season-length.test.js"
+        ]
+      }
+    },
+    {
+      "key": "heldout",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Draw the 20 held-out seeds after tuning and test the strategies on them",
+      "priority": 1,
+      "description": "Show the game works on cases it was not tuned on (spec \"Checks every feature passes\" 2; acceptance checks 8, 17, 18, 19). Start only after the tuning bead has landed on main: check that `git log -1 -- game/data/balance.js` on main is the tuning commit or later.\n\n- Draw 20 seeds now with a random draw (for example `node -e \"console.log(JSON.stringify(Array.from(crypto.getRandomValues(new Uint32Array(20)))))\"`), excluding 1 to 20, and write them to `game/tests/heldout-seeds.json`. Note the command and its output on the bead.\n- `game/tests/heldout.test.js`: over those 20 seeds, `no-defenders` loses the queen in at least 15, `balanced` survives in at least 15, `change-nothing` loses the queen in at least 15, `balanced` outscores `lay-nothing` in all 20, and every season has at least three waves, each larger than the last, with a warning before at least one.\n- Change nothing else. If the test fails on these seeds, do not change `game/data/balance.js`, the seeds or the marks (hive/TEAM.md \"Who decides\" 1): do not land; note the results, write a `LEAD:` note (a retune needs a fresh seed file afterwards), file a bug bead and stop.\n\nRead: hive/specs/1-bee-colony-game.md, game/data/strategies.js, game/sim/run.js, game/tests/tuning.test.js, hive/TEAM.md\nTree: worktree",
+      "acceptance_criteria": "- `game/tests/heldout-seeds.json` holds 20 seeds, none of them 1 to 20\n- `game/tests/heldout.test.js` passes and asserts the marks of spec checks 8, 18 and 19 over the 20 seeds\n- On main, `git merge-base --is-ancestor $(git log -1 --format=%H -- game/data/balance.js) $(git log --diff-filter=A --format=%H -- game/tests/heldout-seeds.json | tail -1)` exits 0\n- `hive/tools/land.py` landed it (fast tests passed on the merge)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "game/tests/heldout-seeds.json",
+          "game/tests/heldout.test.js"
+        ],
+        "new_files": [
+          "game/tests/heldout-seeds.json",
+          "game/tests/heldout.test.js"
+        ]
+      }
+    },
+    {
+      "key": "browsercheck",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Check the browser game against the spec and replay two browser games' records",
+      "priority": 1,
+      "description": "You built none of this. Run the spec's browser checks on the landed game and record the evidence (acceptance checks 2, 3, 5, 6, 7, 9 to 13, 15, 16, 20). Change no code; if something fails, file a bug bead with what you saw and go on with the other checks.\n\n- Use current desktop Chrome on `game/index.html` opened from disk with the network off: the claude-in-chrome tools if you have them, otherwise Chrome headless driven over the DevTools protocol by a script in your scratch folder. `window.beeGame` exposes the running game. $0.\n- Check 15: play two games to the end, one at normal speed and one at fast speed, each with at least one mix change, one hand-picked egg and one warning answered. Save each copied game record as `hive/specs/1-evidence/record-normal.txt` and `hive/specs/1-evidence/record-fast.txt`, and compare `node game/sim/run.js --record <file>` with the browser's end screen. The normal-speed game takes 15 to 25 minutes: run it in the background and wait in the same turn.\n- Check 20: the normal-speed game's playing time, not counting pauses, measured by the clock.\n- Write `hive/specs/1-evidence/browser.md`: for each check number, yes or no, what you did and what you saw, with the seed. Plain sentences (hive/WRITING.md).\n\nRead: hive/specs/1-bee-colony-game.md, docs/game-design.md, game/index.html, game/sim/run.js, hive/WRITING.md\nTree: shared",
+      "acceptance_criteria": "- `hive/specs/1-evidence/browser.md` has a yes or no line for each of checks 2, 3, 5, 6, 7, 9, 10, 11, 12, 13, 15, 16 and 20, each naming the seed and what was seen\n- `hive/specs/1-evidence/record-normal.txt` and `hive/specs/1-evidence/record-fast.txt` exist, and `node game/sim/run.js --record <file>` on each prints the ending, four parts and total that `hive/specs/1-evidence/browser.md` records from the browser end screen\n- Every check answered no has a bug bead linked `discovered-from` this bead",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [],
+      "metadata": {
+        "files": [
+          "hive/specs/1-evidence/browser.md",
+          "hive/specs/1-evidence/record-normal.txt",
+          "hive/specs/1-evidence/record-fast.txt"
+        ],
+        "new_files": [
+          "hive/specs/1-evidence/browser.md",
+          "hive/specs/1-evidence/record-normal.txt",
+          "hive/specs/1-evidence/record-fast.txt"
+        ]
+      }
+    },
+    {
+      "key": "productreview",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Product review: play one full game on a fresh seed as the player would",
+      "priority": 2,
+      "description": "Spec \"Checks every feature passes\" 2, second part, and \"How it serves the product test\". Play one full game of `game/index.html` in a desktop browser, on a seed drawn after the last commit on main (draw it at random after reading `git log -1`), the way a first-time player would: read How to play, use the colony mix, a hand-picked egg, Match the mix now, and answer every warning. Edit nothing (hive/PRODUCT-REVIEW.md).\n\nRecord on this bead as notes: the seed and the commit it was drawn after, the end screen (ending, four parts, total), the copied game record, what went wrong, and whether there was anything worth deciding between waves (the spec's third reason a player might stop). File each problem as a bug bead.\n\nRead: hive/specs/1-bee-colony-game.md, hive/PRODUCT-REVIEW.md, docs/game-design.md\nTree: shared",
+      "acceptance_criteria": "- The bead has notes with the seed, the commit sha it was drawn after, the end screen's ending, four parts and total, and the copied game record\n- The bead has a note that says whether there was anything worth deciding between waves, with examples from the game\n- Each problem found has a bug bead linked `discovered-from` this bead",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [
+        "role:product-reviewer"
+      ]
+    },
+    {
+      "key": "redteam",
+      "parent_key": "epic",
+      "type": "task",
+      "title": "Red team the evidence that issue #1 is done",
+      "priority": 2,
+      "description": "Try to show the evidence that the epic's acceptance is met does not hold (hive/RED-TEAM.md, \"On the evidence that a feature is done\"). Check against the running game and the sources, not the documents' word: reproduce at least one browser check and one `node game/sim/run.js` check yourself, run the held-out git check (acceptance 17) and the no-tuned-numbers search (spec \"Checks every feature passes\" 1), and read the product review notes on its bead. Edit nothing.\n\nRead: hive/specs/1-bee-colony-game.md, hive/RED-TEAM.md, hive/specs/1-evidence/browser.md, docs/game-design.md\nTree: shared",
+      "acceptance_criteria": "- Issue #1 has a new comment whose first line is `HOLDS` or `DOES NOT HOLD`, followed by at most five findings, each naming the acceptance item, what was checked and what was found (`gh issue view 1 --comments` shows it)",
+      "external_ref": "gh-1",
+      "spec_id": "hive/specs/1-bee-colony-game.md",
+      "labels": [
+        "role:red-team"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from_key": "simcore",
+      "to_key": "design",
+      "type": "blocks"
+    },
+    {
+      "from_key": "hornets",
+      "to_key": "simcore",
+      "type": "blocks"
+    },
+    {
+      "from_key": "runner",
+      "to_key": "hornets",
+      "type": "blocks"
+    },
+    {
+      "from_key": "uishell",
+      "to_key": "hornets",
+      "type": "blocks"
+    },
+    {
+      "from_key": "uicontrols",
+      "to_key": "uishell",
+      "type": "blocks"
+    },
+    {
+      "from_key": "tune",
+      "to_key": "runner",
+      "type": "blocks"
+    },
+    {
+      "from_key": "heldout",
+      "to_key": "tune",
+      "type": "blocks"
+    },
+    {
+      "from_key": "browsercheck",
+      "to_key": "uicontrols",
+      "type": "blocks"
+    },
+    {
+      "from_key": "browsercheck",
+      "to_key": "tune",
+      "type": "blocks"
+    },
+    {
+      "from_key": "productreview",
+      "to_key": "uicontrols",
+      "type": "blocks"
+    },
+    {
+      "from_key": "productreview",
+      "to_key": "heldout",
+      "type": "blocks"
+    },
+    {
+      "from_key": "redteam",
+      "to_key": "browsercheck",
+      "type": "blocks"
+    },
+    {
+      "from_key": "redteam",
+      "to_key": "productreview",
+      "type": "blocks"
+    },
+    {
+      "from_key": "redteam",
+      "to_key": "heldout",
+      "type": "blocks"
+    }
+  ]
+}
