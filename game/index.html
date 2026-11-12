@@ -43,7 +43,6 @@
   .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
   .hex { border-radius: 2px; border: 1px solid var(--edge); }
   #feed { margin: 0; padding-left: 18px; min-height: 4em; }
-  #warning-line { color: #a01e14; font-weight: 600; }
   button {
     font: inherit;
     padding: 5px 12px;
@@ -121,10 +120,7 @@
         <tr class="total"><td>Total</td><td class="n" id="score-total">0</td></tr>
       </table>
     </section>
-    <section class="box" aria-label="Controls">
-      <div id="warning-line"></div>
-      <div id="controls"></div>
-    </section>
+    <section class="box" id="controls" aria-label="Controls" hidden></section>
     <section class="box" aria-label="Bees">
       <h2>Bees</h2>
       <table id="castes"></table>

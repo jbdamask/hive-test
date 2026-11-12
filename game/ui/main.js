@@ -219,13 +219,6 @@
     return '';
   }
 
-  function warningLine(g) {
-    var w = g.state.warning;
-    if (!w) return '';
-    return 'A scout sees about ' + w.size + ' hornets arriving in ' + w.daysUntil + ' days. You have ' +
-      w.defenders + ' defenders. The game waits for your answer.';
-  }
-
   function render() {
     var g = ui.game;
     $('hud-speed').textContent = ui.speed === 'fast' ? 'Fast speed' : 'Normal speed';
@@ -236,7 +229,6 @@
     $('hud-seed').textContent = st.seed;
     $('hud-day').textContent = 'Day ' + Math.min(g.day() + 1, B.daysPerSeason) + ' of ' + B.daysPerSeason;
     $('status').textContent = status(g);
-    $('warning-line').textContent = warningLine(g);
 
     var adults = {};
     var young = 0;
