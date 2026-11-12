@@ -1,0 +1,20 @@
+{
+  "name": "Hive test",
+  "slug": "hive-test",
+  "owner": "John",
+  "lead": "Chestnut",
+  "user": "A game where bees have to build a hive, make honey, and defend the hive from murder hornets.",
+  "fast_tests": "python3 -m unittest discover -q -s hive/tests",
+  "spend": "No pay-per-use spend of any kind; the cap is $0",
+  "main_branch": "main",
+  "remote": "origin",
+  "flow_since": "2026-11-12",
+  "shared_tree_may_edit": [
+    "hive/",
+    "docs/",
+    ".beads/",
+    "*.md"
+  ],
+  "protected_folders": [],
+  "labels": true
+}
