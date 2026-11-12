@@ -1,0 +1,9 @@
+bee-colony game record
+seed 71747
+30 {"type":"setMix","mix":"Balanced"}
+121 {"type":"nextEgg","caste":"scout"}
+601 {"type":"fixNotice"}
+2502 {"type":"matchMix"}
+2600 {"type":"answerWarning","answer":"defend"}
+5600 {"type":"answerWarning","answer":"defend"}
+8600 {"type":"answerWarning","answer":"defend"}

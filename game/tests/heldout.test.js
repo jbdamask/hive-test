@@ -1,8 +1,10 @@
 // The tuned balance meets the spec's marks on the 20 held-out seeds in
-// heldout-seeds.json (bead hive-test-eyv; spec 1 acceptance checks 8, 18 and
-// 19). The seeds were drawn at random after tuning stopped (check 17). Never
-// change the seeds, the marks or game/data/balance.js to make this pass; a
-// retune needs a fresh seed file drawn after it.
+// heldout-seeds-v2.json (beads hive-test-eyv, hive-test-4pb.2; spec 1
+// acceptance checks 8, 18 and 19). The seeds were drawn at random after the
+// last change to game/data/balance.js (check 17). Never change the seeds, the
+// marks or game/data/balance.js to make this pass; a retune needs a fresh seed
+// file drawn after it, under a new file name, because check 17 reads the
+// commit that first added the file.
 // Every result is read from `node game/sim/run.js --seed <n> --strategy <name>`.
 'use strict';
 const test = require('node:test');
@@ -11,7 +13,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const RUN = path.join(__dirname, '..', 'sim', 'run.js');
-const SEEDS = require('./heldout-seeds.json');
+const SEEDS = require('./heldout-seeds-v2.json');
 const AT_LEAST = 15; // the spec's "in at least 15 of the 20"
 
 function run(...args) {
