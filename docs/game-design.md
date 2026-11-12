@@ -69,7 +69,7 @@ Murder hornets attack in waves. Waves come at set times in the season, and each 
 
 **The warning.** When a scout sees a wave coming, the game pauses and shows the size of the wave, when it will arrive and how many defenders the colony has:
 
-> Hornets in 2 days: about 14. You have 4 defenders.
+> Hornets in 2 days: about 10. You have 4 defenders.
 > [Defend] lays defenders first and moves 6 bees to defence now.
 > [Keep my mix]
 
@@ -143,7 +143,7 @@ The command-line runner reads the record (`node game/sim/run.js --record <file>`
 
 ## Starting balance numbers
 
-These are starting values. The live values are in `game/data/balance.js`, which the tuning bead changes until the stored strategies and the season length meet the spec. When this table and `game/data/balance.js` differ, the file is right.
+These are the values after tuning on seeds 1 to 20 (bead hive-test-hi1). The live values are in `game/data/balance.js`; when this table and that file differ, the file is right. Tuning made the first wave small, 3 hornets, and halved a hornet's chance of reaching the queen, so a player who keeps Grow usually lives through the first wave and loses the queen to a later one, as the design intends.
 
 **The four mixes.** Each number is a caste's share. A caste's part of the eggs is its share divided by 20, the sum of the shares in each mix.
 
@@ -169,8 +169,9 @@ Grow lays few defenders: 1 egg in 20.
 | Ticks each second at normal speed | 10, so a day takes 20 seconds and a season 20 minutes |
 | Ticks each second at fast speed | 30, so a season takes about 7 minutes |
 | When the waves arrive | Days 15, 30 and 45 |
-| How many hornets in each wave | 6, then 14, then 22 |
+| How many hornets in each wave | 3, then 10, then 20 |
 | How far ahead a scout can see a wave | 2 days |
+| A hornet inside the hive: its chance each fight round of reaching the queen | 1 in 20 |
 
 The other numbers the rules need, such as the starting colony, the length of a fight round, a defender's chance against one hornet, a hornet's chance of reaching the queen, the cost of wax and comb, how long an egg and a larva take, and the size of the flower patches, are set in `game/data/balance.js` when the simulation is built.
 
