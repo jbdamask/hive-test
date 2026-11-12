@@ -24,6 +24,8 @@ WASTE = re.compile(r"^(\w[\w ]{0,20}: )?(superseded|duplicate|not needed|won'?t 
 BLIND = "role:blind-checker"
 QUICK = re.compile(r"\bbd\b.*\b(close|done)\b", re.S)
 SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "\n"}
+SHELLS = {"sh", "bash", "zsh", "dash", "ksh"}
+RUNNERS = {"with-key", "eval"}
 GLOBAL_VALUE = {"-C", "--directory", "--db", "--database", "--actor", "--dolt-auto-commit"}
 CLOSE_VALUE = {"-r", "--reason", "--reason-file", "--session", "--actor", "--db", "--database", "-C",
                "--directory", "--dolt-auto-commit"}
@@ -45,6 +47,19 @@ def _segments(cmd: str) -> list[list[str]]:
     return out
 
 
+def _scripts(words: list[str]) -> list[str]:
+    """The words of one command that a shell will run as a command line: `zsh -c '...'`, `with-key NAME '...'`,
+    `eval '...'`. Text handed to any other command (a bd note, a commit message) is only text."""
+    if not words:
+        return []
+    name, rest = Path(words[0]).name, words[1:]
+    if name in SHELLS:
+        return [rest[k + 1] for k in range(len(rest) - 1) if re.fullmatch(r"-[A-Za-z]*c[A-Za-z]*", rest[k])]
+    if name in RUNNERS:
+        return [w for w in rest if QUICK.search(w)]
+    return []
+
+
 def closes(cmd: str, depth: int = 0) -> list[dict]:
     """Every `bd close` in a shell command: {"ids", "reasons", "reason_files", "dir"}."""
     try:
@@ -56,10 +71,9 @@ def closes(cmd: str, depth: int = 0) -> list[dict]:
         i = 0
         while i < len(seg) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", seg[i]):
             i += 1  # leading VAR=value
-        for j in range(i, len(seg)):
-            tok = seg[j]
-            if depth < 2 and " " in tok and QUICK.search(tok):
-                found += closes(tok, depth + 1)  # zsh -c '...', with-key NAME '...'
+        if depth < 2:
+            for tok in _scripts(seg[i:]):
+                found += closes(tok, depth + 1)
         while i < len(seg) and Path(seg[i]).name != "bd":
             i += 1
         if i >= len(seg):

@@ -164,6 +164,19 @@ class Guards(unittest.TestCase):
         self.assertEqual(recs[0]["ids"], ["ab-1"])
         self.assertEqual(no_close_blocked.closes("bd show ab-1"), [])
 
+    def test_close_quoted_in_text_is_not_a_close(self):
+        # hive-test-2w7: a bd note quoting a close command for a bug was refused as a close.
+        closes = no_close_blocked.closes
+        self.assertEqual(closes('BEADS_ACTOR=e bd note ab-9 "next: bd close ab-1 --reason \'x: done\'"'), [])
+        self.assertEqual(closes('bd create "t" -d "then run bd close ab-1"'), [])
+        self.assertEqual(closes('git commit -m "bd close ab-1 next"'), [])
+        for cmd in ("zsh -c 'bd close ab-1'", "bash -lc 'cd /x && bd close ab-1'", "with-key K 'bd close ab-1'",
+                    "cd /x && zsh -c 'bd note ab-2 hi; bd close ab-1'"):
+            self.assertEqual([r["ids"] for r in closes(cmd)], [["ab-1"]], cmd)
+        bug = {"ab-1": {"id": "ab-1", "issue_type": "bug", "dependencies": []}}
+        self.assertEqual(self.close_bug(bug, 'bd note ab-1 "close with: bd close ab-1 --reason \'x: fixed\'"'), "")
+        self.assertIn("ab-1", self.close_bug(bug, "zsh -c 'bd close ab-1 --reason \"x: fixed\"'"))
+
     def close_bug(self, beads, cmd):
         """Run the hook on `cmd` with bd show answered from `beads` ({id: bead}); return the deny reason or ''."""
         real = no_close_blocked._show
