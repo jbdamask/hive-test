@@ -25,7 +25,7 @@ BLIND = "role:blind-checker"
 QUICK = re.compile(r"\bbd\b.*\b(close|done)\b", re.S)
 SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "\n"}
 SHELLS = {"sh", "bash", "zsh", "dash", "ksh"}
-RUNNERS = {"with-key", "eval"}
+TEXT = {"bd", "git", "echo", "printf"}  # commands whose words are text, never run (but for $(...))
 GLOBAL_VALUE = {"-C", "--directory", "--db", "--database", "--actor", "--dolt-auto-commit"}
 CLOSE_VALUE = {"-r", "--reason", "--reason-file", "--session", "--actor", "--db", "--database", "-C",
                "--directory", "--dolt-auto-commit"}
@@ -47,33 +47,55 @@ def _segments(cmd: str) -> list[list[str]]:
     return out
 
 
-def _scripts(words: list[str]) -> list[str]:
-    """The words of one command that a shell will run as a command line: `zsh -c '...'`, `with-key NAME '...'`,
-    `eval '...'`. Text handed to any other command (a bd note, a commit message) is only text."""
-    if not words:
-        return []
-    name, rest = Path(words[0]).name, words[1:]
-    if name in SHELLS:
-        return [rest[k + 1] for k in range(len(rest) - 1) if re.fullmatch(r"-[A-Za-z]*c[A-Za-z]*", rest[k])]
-    if name in RUNNERS:
-        return [w for w in rest if QUICK.search(w)]
-    return []
+def _subs(word: str) -> list[str]:
+    """The bodies of every `$(...)` in one word: the shell runs these even inside double quotes."""
+    out, k = [], word.find("$(")
+    while k >= 0:
+        depth, j = 0, k + 1
+        while j < len(word):
+            depth += {"(": 1, ")": -1}.get(word[j], 0)
+            if depth == 0:
+                break
+            j += 1
+        out.append(word[k + 2:j])
+        k = word.find("$(", j)
+    return out
+
+
+def _bare_shell(segs: list[list[str]]) -> bool:
+    """A shell with no -c in the command (`echo ... | sh`): text printed elsewhere in it may be run."""
+    return any(seg and Path(seg[0]).name in SHELLS and not any(re.fullmatch(r"-[A-Za-z]*c[A-Za-z]*", w) for w in seg)
+               for seg in segs)
 
 
 def closes(cmd: str, depth: int = 0) -> list[dict]:
-    """Every `bd close` in a shell command: {"ids", "reasons", "reason_files", "dir"}."""
+    """Every `bd close` in a shell command: {"ids", "reasons", "reason_files", "dir"}.
+
+    Any word a command gets may be a command line it runs (`env zsh -c '...'`, `sudo`, `timeout`, `xargs sh -c`,
+    `with-key`), so a word holding a close is read as one. The exception is the words given to bd, git, echo and
+    printf (a note, a commit message): only the `$(...)` and backtick parts of those run. Over-refusing beats a
+    missed close."""
+    cmd = re.sub(r"`([^`]*)`", r"$(\1)", cmd)
     try:
         segs = _segments(cmd)
     except ValueError:
         return []
+    text_ok = not _bare_shell(segs)
     found = []
     for seg in segs:
         i = 0
         while i < len(seg) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", seg[i]):
             i += 1  # leading VAR=value
-        if depth < 2:
-            for tok in _scripts(seg[i:]):
-                found += closes(tok, depth + 1)
+        head = Path(seg[i]).name if i < len(seg) else ""
+        if depth < 4:
+            for k, w in enumerate(seg):
+                if k < i or (head in TEXT and text_ok and k > i):
+                    for body in _subs(w):
+                        found += closes(body, depth + 1)
+                elif k > i and QUICK.search(w):
+                    found += closes(w, depth + 1)
+        if head in TEXT and head != "bd":
+            continue
         while i < len(seg) and Path(seg[i]).name != "bd":
             i += 1
         if i >= len(seg):

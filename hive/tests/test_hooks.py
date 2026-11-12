@@ -177,6 +177,23 @@ class Guards(unittest.TestCase):
         self.assertEqual(self.close_bug(bug, 'bd note ab-1 "close with: bd close ab-1 --reason \'x: fixed\'"'), "")
         self.assertIn("ab-1", self.close_bug(bug, "zsh -c 'bd close ab-1 --reason \"x: fixed\"'"))
 
+    def test_close_behind_a_prefix_or_substitution_is_a_close(self):
+        # hive-test-plk and hive-test-8my: the 2w7 fix missed closes a shell runs behind env/sudo/timeout/nohup/xargs
+        # and inside $(...) or backticks.
+        closes = no_close_blocked.closes
+        for cmd in ("env zsh -c 'bd close ab-1'", "sudo bash -c 'bd close ab-1'", "timeout 60 bash -c 'bd close ab-1'",
+                    "nohup zsh -c 'bd close ab-1'", "/bin/zsh -c 'bd close ab-1'", "eval 'bd close ab-1'",
+                    "bash -o pipefail -c 'bd close ab-1'", 'echo "$(bd close ab-1)"', 'x="$(bd close ab-1)"',
+                    'echo "`bd close ab-1`"', 'bd note ab-2 "$(bd close ab-1)"', 'echo "bd close ab-1" | sh',
+                    "env BEADS_ACTOR=e bd close ab-1", "nice -n 5 with-key K \"zsh -c 'bd close ab-1'\""):
+            self.assertEqual([r["ids"] for r in closes(cmd)], [["ab-1"]], cmd)
+        self.assertEqual([r["ids"] for r in closes("xargs -I{} sh -c 'bd close {}'")], [["{}"]])
+        for cmd in ('echo "bd close ab-1"', 'bd update ab-2 --notes "then bd close ab-1"',
+                    'bd comment ab-2 "bd close ab-1 later"'):
+            self.assertEqual(closes(cmd), [], cmd)
+        self.assertEqual([r["ids"] for r in closes('bd close ab-1 --reason "superseded: see bd close ab-9"')],
+                         [["ab-1"]])
+
     def close_bug(self, beads, cmd):
         """Run the hook on `cmd` with bd show answered from `beads` ({id: bead}); return the deny reason or ''."""
         real = no_close_blocked._show
