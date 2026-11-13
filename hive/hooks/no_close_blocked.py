@@ -214,8 +214,9 @@ def deny(bad: dict[str, list[str]], bugs: list[str] = ()) -> dict:
                      "Close the blocker first, or if the link is wrong, remove it with bd dep remove <id> <blocker> "
                      "and a bd note saying why.")
     if bugs:
-        parts.append(f"Refused: bug {', '.join(bugs)} has no closed {BLIND} bead it depends on (hive/FIXES.md "
-                     "'The blind check'). File the check bead with that label, bd dep add <bug> <check>, "
+        parts.append(f"Refused: bug {', '.join(bugs)} has no closed {BLIND} bead linked as blocks "
+                     "(bd dep add <bug> <check>; a discovered-from link does not count; hive/FIXES.md "
+                     "'The blind check'). File the check bead with that label, link it that way, "
                      "and close the bug after its verdict.")
     parts.append("If the bead is superseded or a duplicate, start the reason with that word.")
     reason = " ".join(parts)
