@@ -69,9 +69,9 @@ The hive sits in a meadow of flower patches, laid out from the game's seed, so e
 
 Murder hornets attack in waves. Waves come at set times in the season, and each wave is larger than the one before.
 
-**The warning.** When a scout sees a wave coming, the game pauses and shows the size of the wave, when it will arrive and how many defenders the colony has:
+**The warning.** When a scout sees a wave coming, the game pauses and shows the size of the wave, when it will arrive and how many defenders the colony will have when it arrives. That count leaves out defenders that die of old age before then and adds those that will have grown up by then, on the current mix:
 
-> Hornets in 2 days: about 10. You have 4 defenders.
+> Hornets in 2 days: about 10. You will have 4 defenders when they arrive.
 > [Defend] lays defenders first and moves 6 bees to defence now.
 > [Keep my mix]
 

@@ -69,6 +69,75 @@ test('seed 1: at least three waves arrive in a full season, each larger, with a 
   }
 });
 
+// The defenders who meet a wave's first round: adults alive as the arrival
+// tick's step starts, plus defenders that emerge in that step (growBrood runs
+// before the fight). `game` stands just before that step; it is stepped once.
+function defendersMeetingWave(game) {
+  const before = adultCounts(game).defender;
+  const emerged = game.step().filter((e) => e.type === 'adultEmerged' && e.caste === 'defender').length;
+  return before + emerged;
+}
+
+// Defender brood the forecast counted on emerging by the arrival tick. Only
+// these can make the forecast miss: a larva the nurses feed late emerges late.
+function broodForecast(game, at) {
+  const br = balance.brood;
+  return game.state.bees.filter((bee) => bee.caste === 'defender' && (
+    (bee.stage === 'larva' && bee.stageTick + br.larvaTicks <= at) ||
+    (bee.stage === 'egg' && bee.stageTick + br.eggTicks + br.larvaTicks <= at))).length;
+}
+
+// Red-team finding 1 (bead hive-test-4pb.4): on seed 81234 the wave 2 warning
+// said 22 defenders, but 17 died of old age before the wave came and 5 met it.
+// The record is the red team's browser game (hive-test-nlw).
+const RED_TEAM_81234 = [
+  'bee-colony game record',
+  'seed 81234',
+  '49 {"type":"setMix","mix":"Gather"}',
+  '50 {"type":"nextEgg","caste":"scout"}',
+  '412 {"type":"fixNotice"}',
+  '2600 {"type":"answerWarning","answer":"defend"}',
+  '5600 {"type":"answerWarning","answer":"keep"}'
+].join('\n');
+
+test('seed 81234: the wave 2 warning shows the defenders that will meet the wave, not those alive now', () => {
+  const atWarning = record.replay(RED_TEAM_81234, balance, { untilTick: 5600 });
+  const warning = atWarning.state.warning;
+  assert.ok(warning && warning.wave === 1, 'the wave 2 warning is up at tick 5600');
+  const margin = broodForecast(atWarning, warning.arrivesTick);
+  const atArrival = record.replay(RED_TEAM_81234, balance, { untilTick: warning.arrivesTick });
+  const met = defendersMeetingWave(atArrival);
+  assert.ok(met <= warning.defenders && met >= warning.defenders - margin,
+    `warning said ${warning.defenders}, ${met} met the wave, brood margin ${margin}`);
+  assert.ok(warning.defendersNow - met > 10, `the old count (${warning.defendersNow}) was far off (${met})`); // not balance: the size of the red team's miss
+});
+
+test('the warning forecast matches the defenders meeting each warned wave, on Keep, seeds 1 to 3', () => {
+  for (let seed = 1; seed <= 3; seed += 1) { // not balance: a handful of seeds
+    for (const mix of ['Balanced', 'Gather']) {
+      const game = sim.createGame(seed, balance);
+      game.choose({ type: 'setMix', mix });
+      const forecast = new Map();
+      while (!game.state.over) {
+        const w = game.state.warning;
+        if (w) {
+          forecast.set(w.arrivesTick, { said: w.defenders, margin: broodForecast(game, w.arrivesTick) });
+          game.choose({ type: 'answerWarning', answer: 'keep' });
+        }
+        const f = forecast.get(game.state.tick);
+        if (f) {
+          const met = defendersMeetingWave(game);
+          assert.ok(met <= f.said && met >= f.said - f.margin,
+            `seed ${seed} ${mix}: warning said ${f.said}, ${met} met the wave, brood margin ${f.margin}`);
+        } else {
+          game.step();
+        }
+      }
+      assert.ok(forecast.size > 0, `seed ${seed} ${mix}: a warning came`);
+    }
+  }
+});
+
 test('an unanswered warning pauses the game and carries size, arrival, defenders and the Defend move count', () => {
   const game = sim.createGame(1, balance);
   const warning = stepToWarning(game);
@@ -80,7 +149,8 @@ test('an unanswered warning pauses the game and carries size, arrival, defenders
   assert.strictEqual(warning.ticksUntil, warning.arrivesTick - tick);
   assert.strictEqual(warning.daysUntil, warning.ticksUntil / balance.ticksPerDay);
   assert.ok(warning.ticksUntil > 0 && warning.daysUntil <= balance.hornets.warnDays);
-  assert.strictEqual(warning.defenders, adultCounts(game).defender);
+  assert.strictEqual(warning.defendersNow, adultCounts(game).defender);
+  assert.ok(Number.isInteger(warning.defenders) && warning.defenders >= 0);
   const proposal = game.proposeMatch('Defend');
   assert.strictEqual(warning.defendMoves, proposal.moved);
   assert.ok(warning.defendMoves > 0);

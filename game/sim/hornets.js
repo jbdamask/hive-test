@@ -13,7 +13,9 @@
  *
  * st.warning, while a warning waits for its answer:
  *   { wave, tick, size, arrivesTick, ticksUntil, daysUntil, defenders,
- *     defendMoves, defendText }
+ *     defendersNow, defendMoves, defendText }
+ * `defenders` is the count expected when the wave arrives on the current mix
+ * (see defendersAt); `defendersNow` is the adult defenders at the warning.
  * The game is paused and step() does not advance until the warning is
  * answered with { type: 'answerWarning', answer: 'defend' | 'keep' }.
  *
@@ -51,6 +53,24 @@
     return adultsOfCaste(st, 'defender').length;
   }
 
+  // Defenders expected at the entrance at tick `at`: adults still within their
+  // lifetime then, plus defender brood that will have emerged by then if the
+  // nurses feed it on time. Brood that dies unfed, and bees lost to a wave
+  // still being fought, are not foreseen. Same order as step(): brood emerges
+  // and the wave fights its first round before old bees die, so a bee whose
+  // life ends at `at` still fights that round and counts.
+  function defendersAt(st, b, at) {
+    var life = b.adult.lifeDays * b.ticksPerDay;
+    var br = b.brood;
+    return st.bees.filter(function (bee) {
+      if (bee.caste !== 'defender') return false;
+      if (bee.stage === 'adult') return bee.stageTick + life >= at;
+      if (bee.stage === 'larva') return bee.stageTick + br.larvaTicks <= at;
+      if (bee.stage === 'egg') return bee.stageTick + br.eggTicks + br.larvaTicks <= at;
+      return false;
+    }).length;
+  }
+
   function plural(n, one, many) {
     return n + ' ' + (n === 1 ? one : many);
   }
@@ -76,7 +96,8 @@
         arrivesTick: w.arriveTick,
         ticksUntil: w.arriveTick - st.tick,
         daysUntil: (w.arriveTick - st.tick) / b.ticksPerDay,
-        defenders: countDefenders(st),
+        defenders: defendersAt(st, b, w.arriveTick),
+        defendersNow: countDefenders(st),
         defendMoves: proposal.moved,
         defendText: proposal.text
       };

@@ -198,8 +198,8 @@
       ui.warningShown = null;
       return;
     }
-    setText($('warning-size'), 'Hornets in ' + days(w.daysUntil) + ': about ' + w.size + '. You have ' +
-      bees(w.defenders, 'defender') + '.');
+    setText($('warning-size'), 'Hornets in ' + days(w.daysUntil) + ': about ' + w.size + '. You will have ' +
+      bees(w.defenders, 'defender') + ' when they arrive.');
     setText($('warning-defend-text'), 'lays defenders first and moves ' + (w.defendMoves === 1 ? '1 bee' : w.defendMoves + ' bees') +
       ' to defence now.');
     setText($('warning-defend-moves'), w.defendMoves > 0 ? w.defendText : '');

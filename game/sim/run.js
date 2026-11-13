@@ -96,7 +96,7 @@
         var w = e.warning;
         return 'warning: ' + waveName(w.wave) + ', about ' + w.size + ' hornets, arrives day ' +
           dayShown(w.arrivesTick, b) + ' (in ' + w.daysUntil + ' days); ' +
-          w.defenders + ' defenders; Defend would move ' + w.defendMoves + ' bees';
+          w.defenders + ' defenders at arrival (' + w.defendersNow + ' now); Defend would move ' + w.defendMoves + ' bees';
       }
       case 'beesMoved':
         return 'bees moved: ' + e.text;
