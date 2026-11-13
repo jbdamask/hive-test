@@ -233,6 +233,9 @@ class Guards(unittest.TestCase):
         bug = {"id": "ab-1", "issue_type": "bug", "dependencies": [found]}
         why = self.close_bug({"ab-1": bug, "ab-2": checker}, 'bd close ab-1 --reason "abc: fixed"')
         self.assertIn("hive/FIXES.md 'The blind check'", why)
+        # hive-test-5xi: the refusal names the link type it needs, not just "depends on".
+        self.assertIn("bead linked as blocks (bd dep add <bug> <check>", why)
+        self.assertNotIn("bead it depends on", why)
         both = {**bug, "dependencies": [found, {**found, "id": "ab-3", "dependency_type": "blocks"}]}
         self.assertEqual(self.close_bug({"ab-1": both, "ab-2": checker, "ab-3": {**checker, "id": "ab-3"}},
                                         'bd close ab-1 --reason "abc: fixed"'), "")
